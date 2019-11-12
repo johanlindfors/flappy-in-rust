@@ -12,7 +12,7 @@ const SCREEN_HEIGHT: i32 = 505;
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Flappy Bird", SCREEN_WIDTH, SCREEN_HEIGHT)
-        .resizable(true)
+        .resizable(false)
         .quit_on_escape(true)
         .build()?
         .run_with(SceneManager::new)
@@ -52,7 +52,7 @@ struct SceneManager {
 impl SceneManager {
     fn new(ctx: &mut Context) -> tetra::Result<SceneManager> {
         let initial_scene = TitleScene::new(ctx)?;
-        graphics::set_scaling(ctx, ScreenScaling::None);
+        graphics::set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect);
         Ok(SceneManager {
             scenes: vec![Box::new(initial_scene)],
         })
