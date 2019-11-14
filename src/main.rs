@@ -9,6 +9,7 @@ use tetra::{Context, ContextBuilder, State};
 
 const SCREEN_WIDTH: i32 = 288;
 const SCREEN_HEIGHT: i32 = 505;
+const GRAVITY: f32 = 9.1;
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Flappy Bird", SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -145,6 +146,8 @@ struct GameScene {
     score_text: Text,
 
     rotation: f32,
+    position: Vec2,
+    velocity: Vec2,
 }
 
 impl GameScene {
@@ -168,12 +171,14 @@ impl GameScene {
             score: 0,
             score_text: Text::new("Score: 0", Font::default(), 16.0),
 
-            rotation: 0.0
+            rotation: 0.0,
+            position: Vec2::new(100.0, 252.0),
+            velocity: Vec2::new(0.0, 0.0)
         })
     }
 
     fn flap(&mut self) {
-
+        self.velocity.y = -4.0;
     }
 
     // fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
@@ -252,6 +257,7 @@ impl GameScene {
 impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.bird.tick();
+
         // self.drop_timer += 1;
         // self.move_timer += 1;
 
@@ -262,9 +268,14 @@ impl Scene for GameScene {
 
         if input::is_key_pressed(ctx, Key::Space)
         {
-            // self.move_timer = 0;
+            self.flap();
             // self.move_queue.push(Move::Left);
         }
+
+        let y = self.velocity.y + GRAVITY / 100.0;
+
+        self.position.y = self.position.y + y;
+        self.velocity.y = y;
 
         // if input::is_key_pressed(ctx, Key::D)
         //     || (self.move_timer == 10 && input::is_key_down(ctx, Key::D))
@@ -396,7 +407,7 @@ impl Scene for GameScene {
             ctx,
             &self.bird,
             DrawParams::new()
-                .position(Vec2::new(100.0, 252.0))
+                .position(self.position)
                 .origin(Vec2::new(0.0, 0.0))
                 .rotation(self.rotation)
         );
