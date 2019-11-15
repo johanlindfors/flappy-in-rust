@@ -89,6 +89,68 @@ impl State for SceneManager {
     }
 }
 
+// === Parallax ground ===
+
+struct Background {
+    ground_texture: Texture,
+    forest_texture: Texture,
+    cityscape_texture: Texture,
+    cloud_texture: Texture,
+
+    ground_rect: Rectangle,
+    forest_rect: Rectangle,
+    cityscape_rect: Rectangle,
+    cloud_rect: Rectangle,
+}
+
+impl Background {
+    fn new(ctx: &mut Context) -> tetra::Result<Background> {
+        Ok( Background {
+            ground_texture: Texture::new(ctx, "./resources/ground.png")?,
+            ground_rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
+
+            forest_texture: Texture::new(ctx, "./resources/trees.png")?,
+            forest_rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
+
+            cityscape_texture: Texture::new(ctx, "./resources/cityscape.png")?,
+            cityscape_rect: Rectangle::new(0.0, 0.0, 300.0, 43.0),
+
+            cloud_texture: Texture::new(ctx, "./resources/clouds.png")?,
+            cloud_rect: Rectangle::new(0.0, 0.0, 352.0, 100.0),
+        })
+    }
+
+    fn update(&mut self) {
+        self.ground_rect.x += 4.0 ;
+        self.forest_rect.x += 3.0 ;
+        self.cityscape_rect.x += 2.0 ;
+        self.cloud_rect.x += 1.0 ;
+    }
+
+    fn draw(&mut self, ctx: &mut Context) {
+        graphics::draw(ctx, &self.cloud_texture,
+            DrawParams::new()
+            .position(Vec2::new(0.0, 300.0))
+            .clip(self.cloud_rect));
+    
+        graphics::draw(ctx, &self.cityscape_texture,
+            DrawParams::new()
+            .position(Vec2::new(0.0, 330.0))
+            .clip(self.cityscape_rect));
+    
+
+        graphics::draw(ctx, &self.forest_texture,
+            DrawParams::new()
+            .position(Vec2::new(0.0, 360.0))
+            .clip(self.forest_rect));
+    
+        graphics::draw(ctx, &self.ground_texture,
+            DrawParams::new()
+            .position(Vec2::new(0.0, 400.0))
+            .clip(self.ground_rect));
+    }
+}
+
 // === Title Scene ===
 
 struct TitleScene {
@@ -131,7 +193,7 @@ impl Scene for TitleScene {
 
 struct GameScene {
     sky_texture: Texture,
-    ground_texture: Texture,
+    background: Background,
 
     bird: Animation,
     
@@ -151,13 +213,15 @@ struct GameScene {
     velocity: Vec2,
     flap_counter: i32,
     flap_delta: f64,
+
 }
 
 impl GameScene {
     fn new(ctx: &mut Context) -> tetra::Result<GameScene> {
         Ok(GameScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
-            ground_texture: Texture::new(ctx, "./resources/ground.png")?,
+            background: Background::new(ctx)?,
+            
             bird: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
                 Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
@@ -178,7 +242,7 @@ impl GameScene {
             position: Vec2::new(100.0, 252.0),
             velocity: Vec2::new(0.0, 0.0),
             flap_counter: 0,
-            flap_delta: 0.0
+            flap_delta: 0.0,
         })
     }
 
@@ -270,22 +334,11 @@ impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.bird.tick();
 
-        // self.drop_timer += 1;
-        // self.move_timer += 1;
-
-        // if self.drop_timer >= 30 {
-        //     self.drop_timer = 0;
-        //     self.move_queue.push(Move::Drop);
-        // }
-
-        if input::is_key_pressed(ctx, Key::Space)
-        {
+        if input::is_key_pressed(ctx, Key::Space) {
             self.flap();
-            // self.move_queue.push(Move::Left);
         }
 
         self.velocity.y = self.velocity.y + GRAVITY / 30.0;
-
         self.position.y = self.position.y + self.velocity.y;
         
         if self.flap_counter > 0 {
@@ -295,123 +348,7 @@ impl Scene for GameScene {
             self.rotation += 0.05;
         }
 
-        // if input::is_key_pressed(ctx, Key::D)
-        //     || (self.move_timer == 10 && input::is_key_down(ctx, Key::D))
-        // {
-        //     self.move_timer = 0;
-        //     self.move_queue.push(Move::Right);
-        // }
-
-        // if input::is_key_pressed(ctx, Key::Q)
-        //     || (self.move_timer == 10 && input::is_key_down(ctx, Key::Q))
-        // {
-        //     self.move_timer = 0;
-        //     self.move_queue.push(Move::RotateCcw);
-        // }
-
-        // if input::is_key_pressed(ctx, Key::E)
-        //     || (self.move_timer == 10 && input::is_key_down(ctx, Key::E))
-        // {
-        //     self.move_timer = 0;
-        //     self.move_queue.push(Move::RotateCw);
-        // }
-
-        // if input::is_key_pressed(ctx, Key::S)
-        //     || (self.move_timer == 10 && input::is_key_down(ctx, Key::S))
-        // {
-        //     self.move_timer = 0;
-        //     self.drop_timer = 0;
-        //     self.move_queue.push(Move::Drop);
-        // }
-
-        // if input::is_key_pressed(ctx, Key::Space) {
-        //     self.drop_timer = 0;
-        //     self.move_queue.push(Move::HardDrop);
-        // }
-
-        // let next_move = self.move_queue.pop();
-
-        // match next_move {
-        //     Some(Move::Left) => {
-        //         if !self.collides(-1, 0) {
-        //             self.block.x -= 1;
-        //         }
-        //     }
-        //     Some(Move::Right) => {
-        //         if !self.collides(1, 0) {
-        //             self.block.x += 1;
-        //         }
-        //     }
-        //     Some(Move::RotateCcw) => {
-        //         self.block.rotate_ccw();
-
-        //         let mut nudge = 0;
-
-        //         if self.collides(0, 0) {
-        //             nudge = if self.block.x > 5 { -1 } else { 1 }
-        //         }
-
-        //         if nudge != 0 && self.collides(nudge, 0) {
-        //             self.block.rotate_cw();
-        //         } else {
-        //             self.block.x += nudge;
-        //         }
-        //     }
-        //     Some(Move::RotateCw) => {
-        //         self.block.rotate_cw();
-
-        //         let mut nudge = 0;
-
-        //         if self.collides(0, 0) {
-        //             nudge = if self.block.x > 5 { -1 } else { 1 }
-        //         }
-
-        //         if nudge != 0 && self.collides(nudge, 0) {
-        //             self.block.rotate_ccw();
-        //         } else {
-        //             self.block.x += nudge;
-        //         }
-        //     }
-        //     Some(Move::Drop) => {
-        //         if self.collides(0, 1) {
-        //             self.soft_drop_sound.play_with(ctx, 0.5, 1.0)?;
-        //             self.lock();
-
-        //             if self.check_for_clears() {
-        //                 self.line_clear_sound.play_with(ctx, 0.5, 1.0)?;
-        //             }
-
-        //             if self.check_for_game_over() {
-        //                 self.game_over_sound.play_with(ctx, 0.2, 1.0)?;
-        //                 return Ok(Transition::Pop);
-        //             }
-
-        //             self.block = Block::new();
-        //         } else {
-        //             self.block.y += 1;
-        //         }
-        //     }
-        //     Some(Move::HardDrop) => {
-        //         while !self.collides(0, 1) {
-        //             self.block.y += 1;
-        //         }
-
-        //         self.hard_drop_sound.play_with(ctx, 0.5, 1.0)?;
-        //         self.lock();
-
-        //         if self.check_for_clears() {
-        //             self.line_clear_sound.play_with(ctx, 0.5, 1.0)?;
-        //         }
-
-        //         if self.check_for_game_over() {
-        //             self.game_over_sound.play_with(ctx, 0.2, 1.0)?;
-        //             return Ok(Transition::Pop);
-        //         }
-
-        //         self.block = Block::new();
-        //     }
-        //     None => {}
-        // }
+        self.background.update();
 
         Ok(Transition::None)
     }
@@ -419,7 +356,8 @@ impl Scene for GameScene {
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
-        graphics::draw(ctx, &self.ground_texture, Vec2::new(0.0, 400.0));
+
+        self.background.draw(ctx);
 
         graphics::draw(
             ctx,
