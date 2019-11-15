@@ -183,13 +183,13 @@ impl GameScene {
     }
 
     fn flap(&mut self) {
-        self.velocity.y = -4.5;
+        self.velocity.y = -7.5;
         self.flap_counter = 6;
         self.tween_rotation();
     }
 
     fn tween_rotation(&mut self) {
-        let distance = (-0.8 - self.rotation) as f64;
+        let distance = (-1.0 - self.rotation) as f64;
         self.flap_delta = distance.abs() / self.flap_counter as f64;
     }
 
@@ -284,16 +284,15 @@ impl Scene for GameScene {
             // self.move_queue.push(Move::Left);
         }
 
-        let y = self.velocity.y + GRAVITY / 80.0;
+        self.velocity.y = self.velocity.y + GRAVITY / 30.0;
 
-        self.position.y = self.position.y + y;
-        self.velocity.y = y;
+        self.position.y = self.position.y + self.velocity.y;
         
         if self.flap_counter > 0 {
             self.rotation -= self.flap_delta as f32;
             self.flap_counter -= 1; 
         } if self.rotation < 1.3 {
-            self.rotation += 0.03;
+            self.rotation += 0.05;
         }
 
         // if input::is_key_pressed(ctx, Key::D)
