@@ -6,6 +6,7 @@ use tetra::graphics::animation::Animation;
 use tetra::input::{self, Key};
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
+use std::f64;
 
 const SCREEN_WIDTH: i32 = 288;
 const SCREEN_HEIGHT: i32 = 505;
@@ -148,6 +149,8 @@ struct GameScene {
     rotation: f32,
     position: Vec2,
     velocity: Vec2,
+    flap_counter: i32,
+    flap_delta: f64,
 }
 
 impl GameScene {
@@ -173,12 +176,21 @@ impl GameScene {
 
             rotation: 0.0,
             position: Vec2::new(100.0, 252.0),
-            velocity: Vec2::new(0.0, 0.0)
+            velocity: Vec2::new(0.0, 0.0),
+            flap_counter: 0,
+            flap_delta: 0.0
         })
     }
 
     fn flap(&mut self) {
-        self.velocity.y = -4.0;
+        self.velocity.y = -4.5;
+        self.flap_counter = 6;
+        self.tween_rotation();
+    }
+
+    fn tween_rotation(&mut self) {
+        let distance = (-0.8 - self.rotation) as f64;
+        self.flap_delta = distance.abs() / self.flap_counter as f64;
     }
 
     // fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
@@ -272,10 +284,17 @@ impl Scene for GameScene {
             // self.move_queue.push(Move::Left);
         }
 
-        let y = self.velocity.y + GRAVITY / 100.0;
+        let y = self.velocity.y + GRAVITY / 80.0;
 
         self.position.y = self.position.y + y;
         self.velocity.y = y;
+        
+        if self.flap_counter > 0 {
+            self.rotation -= self.flap_delta as f32;
+            self.flap_counter -= 1; 
+        } if self.rotation < 1.3 {
+            self.rotation += 0.03;
+        }
 
         // if input::is_key_pressed(ctx, Key::D)
         //     || (self.move_timer == 10 && input::is_key_down(ctx, Key::D))
@@ -408,7 +427,7 @@ impl Scene for GameScene {
             &self.bird,
             DrawParams::new()
                 .position(self.position)
-                .origin(Vec2::new(0.0, 0.0))
+                .origin(Vec2::new(17.0, 12.0))
                 .rotation(self.rotation)
         );
     }
