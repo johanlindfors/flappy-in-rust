@@ -3,7 +3,7 @@ use tetra::audio::Sound;
 use tetra::graphics::ScreenScaling;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Rectangle, Vec2};
 use tetra::graphics::animation::Animation;
-use tetra::input::{self, Key};
+use tetra::input::{self, Key, MouseButton};
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
 use std::f64;
@@ -55,6 +55,7 @@ impl SceneManager {
     fn new(ctx: &mut Context) -> tetra::Result<SceneManager> {
         let initial_scene = TitleScene::new(ctx)?;
         graphics::set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect);
+        window::show_mouse(ctx);
         Ok(SceneManager {
             scenes: vec![Box::new(initial_scene)],
         })
@@ -154,27 +155,56 @@ impl Background {
 // === Title Scene ===
 
 struct TitleScene {
-    title_text: Text,
-    help_text: Text,
+    sky_texture: Texture,
+    title: Texture,
+    start: Texture, 
+    bird: Animation,
+    background: Background,
+    start_rect: Rectangle,
 }
 
 impl TitleScene {
     fn new(ctx: &mut Context) -> tetra::Result<TitleScene> {
-        // // Setting a Sound to repeat without holding on to the SoundInstance
-        // // is usually a bad practice, as it means you can never stop playback.
-        // // In our case though, we want it to repeat forever, so it's fine!
-        // Sound::new("./examples/resources/bgm.wav")?.repeat(ctx)?;
+        let button_texture = Texture::new(ctx, "./resources/start-button.png")?;
+        let start_rect = Rectangle::new(
+            SCREEN_WIDTH as f32/2.0 - button_texture.width() as f32 / 2.0, 
+            300.0 - button_texture.height() as f32 / 2.0,
+            button_texture.width() as f32,
+            button_texture.height() as f32    
+        );
 
         Ok(TitleScene {
-            title_text: Text::new("Flappy Bird", Font::default(), 36.0),
-            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", Font::default(), 16.0),
+            sky_texture: Texture::new(ctx, "./resources/sky.png")?,
+            title: Texture::new(ctx, "./resources/title.png")?,
+            start: button_texture,
+            
+            bird: Animation::new(
+                Texture::new(ctx, "./resources/bird.png")?,
+                Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
+                5,
+            ),
+            background: Background::new(ctx)?,
+            start_rect: start_rect
         })
+    }
+
+    fn button_contains(&mut self, point: Vec2) -> bool {
+        point.x >= self.start_rect.x &&
+        point.x <= (self.start_rect.x + self.start_rect.width) &&
+        point.y >= self.start_rect.y &&
+        point.y <= (self.start_rect.y + self.start_rect.height)
+           
     }
 }
 
 impl Scene for TitleScene {
+
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
-        if input::is_key_pressed(ctx, Key::Space) {
+        self.bird.tick();
+        self.background.update();
+
+        let mouse_position = input::get_mouse_position(ctx);
+        if input::is_mouse_button_down(ctx, MouseButton::Left) &&  self.button_contains(mouse_position) {
             Ok(Transition::Push(Box::new(GameScene::new(ctx)?)))
         } else {
             Ok(Transition::None)
@@ -182,10 +212,14 @@ impl Scene for TitleScene {
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
-        graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
+        graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
 
-        graphics::draw(ctx, &self.title_text, Vec2::new(16.0, 16.0));
-        graphics::draw(ctx, &self.help_text, Vec2::new(16.0, 56.0));
+        self.background.draw(ctx);
+
+        graphics::draw(ctx, &self.bird, Vec2::new(230.0,105.0));
+
+        graphics::draw(ctx, &self.title, Vec2::new(30.0, 100.0));
+        graphics::draw(ctx, &self.start, Vec2::new(self.start_rect.x, self.start_rect.y));
     }
 }
 
@@ -213,7 +247,7 @@ struct GameScene {
     velocity: Vec2,
     flap_counter: i32,
     flap_delta: f64,
-
+    is_mouse_down: bool
 }
 
 impl GameScene {
@@ -243,6 +277,7 @@ impl GameScene {
             velocity: Vec2::new(0.0, 0.0),
             flap_counter: 0,
             flap_delta: 0.0,
+            is_mouse_down: false,
         })
     }
 
@@ -334,8 +369,13 @@ impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.bird.tick();
 
-        if input::is_key_pressed(ctx, Key::Space) {
-            self.flap();
+        if input::is_mouse_button_down(ctx, MouseButton::Left) {
+            if !self.is_mouse_down {
+                self.flap();
+                self.is_mouse_down = true;
+            }
+        } else {
+            self.is_mouse_down = false;
         }
 
         self.velocity.y = self.velocity.y + GRAVITY / 30.0;
