@@ -1,4 +1,4 @@
-use rand::{self, Rng};
+use rand::{thread_rng, Rng};
 use tetra::audio::Sound;
 use tetra::graphics::ScreenScaling;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Rectangle, Vec2};
@@ -271,10 +271,6 @@ impl Pipe {
         })
     }
 
-    fn update(&mut self) {
-
-    }
-
     fn draw(&mut self, ctx: &mut Context, position: Vec2) {
         graphics::draw(ctx, &self.texture, DrawParams::new()
                 .position(Vec2::new(self.position.x + position.x, self.position.y + position.y))
@@ -286,6 +282,8 @@ struct PipeGroup {
     position: Vec2,
     top_pipe: Pipe,
     bottom_pipe: Pipe,
+    alive: bool,
+    enabled: bool
 }
 
 impl PipeGroup {
@@ -294,12 +292,19 @@ impl PipeGroup {
             position: Vec2::new(0.0, 0.0),
             top_pipe: Pipe::new(ctx, Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
             bottom_pipe: Pipe::new(ctx, Vec2::new(0.0, 440.0), Rectangle::new(54.0, 0.0, 54.0, 320.0))?,
+            alive: false,
+            enabled: false,
         })
     }
 
     fn update(&mut self, ctx: &mut Context) {
-        self.top_pipe.update();
-        self.bottom_pipe.update();
+        if self.alive && self.enabled {
+            self.position.x -= 4.0;
+        }
+        if self.position.x < -54.0 {
+            self.alive = false;
+            self.enabled = false;
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context) {
@@ -309,7 +314,43 @@ impl PipeGroup {
 
     fn reset(&mut self, x: f32, y: f32) {
         self.position.x = x;
-        self.position.y = y;
+        self.position.y = y - 160.0;
+        self.alive = true;
+        self.enabled = true;
+    }
+}
+
+struct PipeGenerator {
+    counter: i32,
+    enabled: bool
+}
+
+impl PipeGenerator {
+    fn new() -> tetra::Result<PipeGenerator> {
+        Ok(PipeGenerator {
+            counter: 0,
+            enabled: false,
+        })
+    }
+
+    fn start(&mut self) {
+        self.enabled = true;
+    }
+
+    fn stop(&mut self) {
+        self.enabled = false;
+    }
+
+    fn should_spawn_pipe(&mut self) -> bool {
+        if self.enabled {
+            self.counter += 1;
+            if self.counter >= 60 {
+                self.counter = 0;
+                return true;
+            }
+        }
+        
+        false
     }
 }
 
@@ -409,6 +450,7 @@ struct GameScene {
 
     pipes: Vec<PipeGroup>,
     game_over: bool,
+    pipe_generator: PipeGenerator,
 }
 
 impl GameScene {
@@ -434,7 +476,8 @@ impl GameScene {
             is_mouse_down: true,
             instructions_visible: true,
             pipes: Vec::new(),
-            game_over: false
+            game_over: false,
+            pipe_generator: PipeGenerator::new()?,
         })
     }
 
@@ -446,6 +489,9 @@ impl GameScene {
         self.game_over = false;
         self.bird.allow_gravity = true;
         self.background.scroll = true;
+
+        self.pipes.clear();
+        self.pipe_generator.start();
     }
 
     fn check_for_collisions(&mut self) {
@@ -455,6 +501,11 @@ impl GameScene {
             self.background.scroll = false;
 
             self.game_over = true;
+            self.pipe_generator.stop();
+
+            for pipe_group in &mut self.pipes {
+                pipe_group.enabled = false;
+            }
         }
     }
 
@@ -547,9 +598,28 @@ impl Scene for GameScene {
             self.is_mouse_down = false;
         }
 
+        for pipe_group in &mut self.pipes {
+            pipe_group.update(ctx);
+        }
+
         self.background.update();
 
         self.check_for_collisions();
+
+        if self.pipe_generator.should_spawn_pipe() {
+            let mut rng = thread_rng();
+            let y: f32 = rng.gen_range(-100.0, 100.0);
+
+            for pipe_group in &mut self.pipes {
+                if !pipe_group.alive {
+                    pipe_group.reset(SCREEN_WIDTH as f32, y);
+                    return Ok(Transition::None);
+                }
+            }
+            let mut pipe_group = PipeGroup::new(ctx)?;
+            pipe_group.reset(SCREEN_WIDTH as f32, y);
+            self.pipes.push(pipe_group);
+        }
 
         Ok(Transition::None)
     }
@@ -567,6 +637,10 @@ impl Scene for GameScene {
             graphics::draw(ctx, &self.get_ready, DrawParams::new()
                 .position(Vec2::new(SCREEN_WIDTH as f32/2.0, 100.0))
                 .origin(Vec2::new(self.get_ready.width() as f32/2.0,self.get_ready.height() as f32/2.0)));
+        }
+
+        for pipe_group in &mut self.pipes {
+            pipe_group.draw(ctx);
         }
 
         self.bird.draw(ctx);
