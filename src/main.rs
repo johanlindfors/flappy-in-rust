@@ -243,6 +243,65 @@ impl Bird {
     }
 }
 
+// === Pipes ===
+
+struct Pipe {
+    position: Vec2,
+    source_rect: Rectangle,
+    texture: Texture,
+}
+
+impl Pipe {
+    fn new(ctx: &mut Context, position: Vec2, source_rect: Rectangle) -> tetra::Result<Pipe> {
+        Ok(Pipe {
+            position: position,
+            source_rect: source_rect,
+            texture: Texture::new(ctx, "./resources/pipes.png")?
+        })
+    }
+
+    fn update(&mut self) {
+
+    }
+
+    fn draw(&mut self, ctx: &mut Context, position: Vec2) {
+        graphics::draw(ctx, &self.texture, DrawParams::new()
+                .position(Vec2::new(self.position.x + position.x, self.position.y + position.y))
+                .clip(self.source_rect));
+    }
+}
+
+struct PipeGroup {
+    position: Vec2,
+    top_pipe: Pipe,
+    bottom_pipe: Pipe,
+}
+
+impl PipeGroup {
+    fn new(ctx: &mut Context) -> tetra::Result<PipeGroup> {
+        Ok(PipeGroup {
+            position: Vec2::new(0.0, 0.0),
+            top_pipe: Pipe::new(ctx, Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
+            bottom_pipe: Pipe::new(ctx, Vec2::new(0.0, 440.0), Rectangle::new(54.0, 0.0, 54.0, 320.0))?,
+        })
+    }
+
+    fn update(&mut self, ctx: &mut Context) {
+        self.top_pipe.update();
+        self.bottom_pipe.update();
+    }
+
+    fn draw(&mut self, ctx: &mut Context) {
+        self.top_pipe.draw(ctx, self.position);
+        self.bottom_pipe.draw(ctx, self.position);
+    }
+
+    fn reset(&mut self, x: f32, y: f32) {
+        self.position.x = x;
+        self.position.y = y;
+    }
+}
+
 // === Title Scene ===
 
 struct TitleScene {
@@ -336,6 +395,8 @@ struct GameScene {
 
     is_mouse_down: bool,
     instructions_visible: bool,
+
+    pipes: Vec<PipeGroup>
 }
 
 impl GameScene {
@@ -360,6 +421,7 @@ impl GameScene {
 
             is_mouse_down: true,
             instructions_visible: true,
+            pipes: Vec::new(),
         })
     }
 
