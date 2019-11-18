@@ -283,7 +283,8 @@ struct PipeGroup {
     top_pipe: Pipe,
     bottom_pipe: Pipe,
     alive: bool,
-    enabled: bool
+    enabled: bool,
+    has_scored: bool,
 }
 
 impl PipeGroup {
@@ -294,6 +295,7 @@ impl PipeGroup {
             bottom_pipe: Pipe::new(ctx, Vec2::new(0.0, 440.0), Rectangle::new(54.0, 0.0, 54.0, 320.0))?,
             alive: false,
             enabled: false,
+            has_scored: false,
         })
     }
 
@@ -317,6 +319,7 @@ impl PipeGroup {
         self.position.y = y - 160.0;
         self.alive = true;
         self.enabled = true;
+        self.has_scored = false;
     }
 }
 
@@ -492,6 +495,9 @@ impl GameScene {
 
         self.pipes.clear();
         self.pipe_generator.start();
+
+        self.score = 0;
+        self.score_text.set_content(format!("Score: {}", self.score));
     }
 
     fn check_for_collisions(&mut self) {
@@ -599,6 +605,11 @@ impl Scene for GameScene {
         }
 
         for pipe_group in &mut self.pipes {
+            if !pipe_group.has_scored && pipe_group.position.x <= self.bird.position.x {
+                pipe_group.has_scored = true;
+                self.score += 1;
+                self.score_text.set_content(format!("Score: {}", self.score));
+            }
             pipe_group.update(ctx);
         }
 
@@ -642,6 +653,8 @@ impl Scene for GameScene {
         for pipe_group in &mut self.pipes {
             pipe_group.draw(ctx);
         }
+
+        graphics::draw(ctx, &self.score_text, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 50.0));
 
         self.bird.draw(ctx);
     }
