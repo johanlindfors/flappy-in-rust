@@ -105,6 +105,8 @@ struct Background {
     forest_rect: Rectangle,
     cityscape_rect: Rectangle,
     cloud_rect: Rectangle,
+
+    scroll: bool
 }
 
 impl PhysicsBody for Background {
@@ -131,14 +133,18 @@ impl Background {
 
             cloud_texture: Texture::new(ctx, "./resources/clouds.png")?,
             cloud_rect: Rectangle::new(0.0, 0.0, 352.0, 100.0),
+
+            scroll: true,
         })
     }
 
     fn update(&mut self) {
-        self.ground_rect.x += 4.0 ;
-        self.forest_rect.x += 3.0 ;
-        self.cityscape_rect.x += 2.0 ;
-        self.cloud_rect.x += 1.0 ;
+        if self.scroll {
+            self.ground_rect.x += 4.0 ;
+            self.forest_rect.x += 3.0 ;
+            self.cityscape_rect.x += 2.0 ;
+            self.cloud_rect.x += 1.0 ;
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context) {
@@ -210,15 +216,20 @@ impl Bird {
         self.tween_rotation();
     }
 
+    fn reset(&mut self) {
+        self.velocity = Vec2::new(0.0, 0.0);
+        self.position = Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0);
+    }
+
     fn tween_rotation(&mut self) {
         let distance = (-1.0 - self.rotation) as f64;
         self.flap_delta = distance.abs() / self.flap_counter as f64;
     }
 
     fn update(&mut self) {
-        self.animation.tick();
-
         if self.allow_gravity {
+            self.animation.tick();
+
             self.velocity.y = self.velocity.y + GRAVITY / 30.0;
             self.position.y = self.position.y + self.velocity.y;
 
@@ -396,7 +407,8 @@ struct GameScene {
     is_mouse_down: bool,
     instructions_visible: bool,
 
-    pipes: Vec<PipeGroup>
+    pipes: Vec<PipeGroup>,
+    game_over: bool,
 }
 
 impl GameScene {
@@ -422,6 +434,7 @@ impl GameScene {
             is_mouse_down: true,
             instructions_visible: true,
             pipes: Vec::new(),
+            game_over: false
         })
     }
 
@@ -429,13 +442,19 @@ impl GameScene {
         if self.instructions_visible {
             self.instructions_visible = false;
         }
+        self.bird.reset();
+        self.game_over = false;
         self.bird.allow_gravity = true;
+        self.background.scroll = true;
     }
 
     fn check_for_collisions(&mut self) {
         if self.bird.collides_with(&self.background.get_collision_rect()) {
         // if check_collision(&self.background.get_collision_rect(), &self.bird.get_collision_rect()) {
             self.bird.allow_gravity = false;
+            self.background.scroll = false;
+
+            self.game_over = true;
         }
     }
 
@@ -518,7 +537,7 @@ impl Scene for GameScene {
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             if !self.is_mouse_down {
-                if self.instructions_visible {
+                if self.instructions_visible || self.game_over {
                     self.start_game();
                 }
                 self.bird.flap();
