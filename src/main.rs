@@ -20,17 +20,6 @@ fn main() -> tetra::Result {
         .run_with(SceneManager::new)
 }
 
-// === Tween manager ===
-
-trait Tweenable {
-    fn is_complete(&mut self) -> bool;
-    fn update(&mut self, delta: f64);
-}
-
-struct TweenManager {
-
-}
-
 // === Scene Management ===
 
 trait Scene {
@@ -90,6 +79,20 @@ impl State for SceneManager {
     }
 }
 
+// === Physics ===
+
+trait PhysicsBody {
+    fn get_collision_rect(&mut self) -> Rectangle;
+    fn collides_with(&mut self, obj: &Rectangle) -> bool;
+}
+
+fn check_collision(rect1: &Rectangle, rect2: &Rectangle) -> bool {
+    rect1.x < rect2.x + rect2.width &&
+    rect1.x + rect1.width > rect2.x &&
+    rect1.y < rect2.y + rect2.height &&
+    rect1.y + rect1.height > rect2.y
+}
+
 // === Parallax ground ===
 
 struct Background {
@@ -102,6 +105,16 @@ struct Background {
     forest_rect: Rectangle,
     cityscape_rect: Rectangle,
     cloud_rect: Rectangle,
+}
+
+impl PhysicsBody for Background {
+    fn get_collision_rect(&mut self) -> Rectangle {
+        Rectangle::new(0.0, 400.0, SCREEN_WIDTH as f32, 112.0)
+    }
+
+    fn collides_with(&mut self, obj: &Rectangle) -> bool {
+        check_collision(&self.get_collision_rect(), obj)
+    }
 }
 
 impl Background {
@@ -152,6 +165,84 @@ impl Background {
     }
 }
 
+// === Bird ===
+
+struct Bird {
+    animation: Animation,
+    rotation: f32,
+    position: Vec2,
+    velocity: Vec2,
+    flap_counter: i32,
+    flap_delta: f64,
+    allow_gravity: bool,
+}
+
+impl PhysicsBody for Bird {
+    fn get_collision_rect(&mut self) -> Rectangle {
+        Rectangle::new(self.position.x, self.position.y, 34.0, 24.0)
+    }
+
+    fn collides_with(&mut self, obj: &Rectangle) -> bool {
+        check_collision(&self.get_collision_rect(), obj)
+    }
+}
+
+impl Bird {
+    fn new(ctx: &mut Context) -> tetra::Result<Bird> {
+        Ok(Bird {
+            animation: Animation::new(
+                Texture::new(ctx, "./resources/bird.png")?,
+                Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
+                5,
+            ),
+            rotation: 0.0,
+            position: Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0),
+            velocity: Vec2::new(0.0, 0.0),
+            flap_counter: 0,
+            flap_delta: 0.0,
+            allow_gravity: false,
+        })
+    }
+
+    fn flap(&mut self) {
+        self.velocity.y = -7.5;
+        self.flap_counter = 6;
+        self.tween_rotation();
+    }
+
+    fn tween_rotation(&mut self) {
+        let distance = (-1.0 - self.rotation) as f64;
+        self.flap_delta = distance.abs() / self.flap_counter as f64;
+    }
+
+    fn update(&mut self) {
+        self.animation.tick();
+
+        if self.allow_gravity {
+            self.velocity.y = self.velocity.y + GRAVITY / 30.0;
+            self.position.y = self.position.y + self.velocity.y;
+
+            if self.flap_counter > 0 {
+                self.rotation -= self.flap_delta as f32;
+                self.flap_counter -= 1; 
+            } if self.rotation < 1.3 {
+                self.rotation += 0.05;
+            }
+        }
+    }
+
+    fn draw(&mut self, ctx: &mut Context ) {
+        graphics::draw(
+            ctx,
+            &self.animation,
+            DrawParams::new()
+                .position(self.position)
+                .origin(Vec2::new(17.0, 12.0))
+                .rotation(self.rotation)
+        );
+    }
+}
+
 // === Title Scene ===
 
 struct TitleScene {
@@ -193,14 +284,12 @@ impl TitleScene {
         point.x <= (self.start_rect.x + self.start_rect.width) &&
         point.y >= self.start_rect.y &&
         point.y <= (self.start_rect.y + self.start_rect.height)
-           
     }
 }
 
 impl Scene for TitleScene {
 
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
-        self.bird.tick();
         self.background.update();
 
         let mouse_position = input::get_mouse_position(ctx);
@@ -232,7 +321,7 @@ struct GameScene {
     instructions: Texture,
     get_ready: Texture,
 
-    bird: Animation,
+    bird: Bird,
     
     flap_sound: Sound,
     ground_hit_sound: Sound,
@@ -245,14 +334,8 @@ struct GameScene {
     score: i32,
     score_text: Text,
 
-    rotation: f32,
-    position: Vec2,
-    velocity: Vec2,
-    flap_counter: i32,
-    flap_delta: f64,
     is_mouse_down: bool,
     instructions_visible: bool,
-    allow_gravity: bool,
 }
 
 impl GameScene {
@@ -263,11 +346,7 @@ impl GameScene {
             get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
             instructions: Texture::new(ctx, "./resources/instructions.png")?,
             
-            bird: Animation::new(
-                Texture::new(ctx, "./resources/bird.png")?,
-                Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
-                5,
-            ),
+            bird: Bird::new(ctx)?,
 
             flap_sound: Sound::new("./resources/flap.wav")?,
             ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
@@ -279,14 +358,8 @@ impl GameScene {
             score: 0,
             score_text: Text::new("Score: 0", Font::default(), 16.0),
 
-            rotation: 0.0,
-            position: Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0),
-            velocity: Vec2::new(0.0, 0.0),
-            flap_counter: 0,
-            flap_delta: 0.0,
-            is_mouse_down: false,
+            is_mouse_down: true,
             instructions_visible: true,
-            allow_gravity: false,
         })
     }
 
@@ -294,18 +367,14 @@ impl GameScene {
         if self.instructions_visible {
             self.instructions_visible = false;
         }
-        self.allow_gravity = true;
+        self.bird.allow_gravity = true;
     }
 
-    fn flap(&mut self) {
-        self.velocity.y = -7.5;
-        self.flap_counter = 6;
-        self.tween_rotation();
-    }
-
-    fn tween_rotation(&mut self) {
-        let distance = (-1.0 - self.rotation) as f64;
-        self.flap_delta = distance.abs() / self.flap_counter as f64;
+    fn check_for_collisions(&mut self) {
+        if self.bird.collides_with(&self.background.get_collision_rect()) {
+        // if check_collision(&self.background.get_collision_rect(), &self.bird.get_collision_rect()) {
+            self.bird.allow_gravity = false;
+        }
     }
 
     // fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
@@ -383,33 +452,23 @@ impl GameScene {
 
 impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
-        self.bird.tick();
+        self.bird.update();
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             if !self.is_mouse_down {
                 if self.instructions_visible {
                     self.start_game();
                 }
-                self.flap();
+                self.bird.flap();
                 self.is_mouse_down = true;
             }
         } else {
             self.is_mouse_down = false;
         }
 
-        if self.allow_gravity {
-            self.velocity.y = self.velocity.y + GRAVITY / 30.0;
-            self.position.y = self.position.y + self.velocity.y;
-
-            if self.flap_counter > 0 {
-                self.rotation -= self.flap_delta as f32;
-                self.flap_counter -= 1; 
-            } if self.rotation < 1.3 {
-                self.rotation += 0.05;
-            }
-        }
-
         self.background.update();
+
+        self.check_for_collisions();
 
         Ok(Transition::None)
     }
@@ -429,13 +488,6 @@ impl Scene for GameScene {
                 .origin(Vec2::new(self.get_ready.width() as f32/2.0,self.get_ready.height() as f32/2.0)));
         }
 
-        graphics::draw(
-            ctx,
-            &self.bird,
-            DrawParams::new()
-                .position(self.position)
-                .origin(Vec2::new(17.0, 12.0))
-                .rotation(self.rotation)
-        );
+        self.bird.draw(ctx);
     }
 }
