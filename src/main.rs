@@ -229,6 +229,9 @@ struct GameScene {
     sky_texture: Texture,
     background: Background,
 
+    instructions: Texture,
+    get_ready: Texture,
+
     bird: Animation,
     
     flap_sound: Sound,
@@ -247,7 +250,9 @@ struct GameScene {
     velocity: Vec2,
     flap_counter: i32,
     flap_delta: f64,
-    is_mouse_down: bool
+    is_mouse_down: bool,
+    instructions_visible: bool,
+    allow_gravity: bool,
 }
 
 impl GameScene {
@@ -255,6 +260,8 @@ impl GameScene {
         Ok(GameScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             background: Background::new(ctx)?,
+            get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
+            instructions: Texture::new(ctx, "./resources/instructions.png")?,
             
             bird: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
@@ -273,12 +280,21 @@ impl GameScene {
             score_text: Text::new("Score: 0", Font::default(), 16.0),
 
             rotation: 0.0,
-            position: Vec2::new(100.0, 252.0),
+            position: Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0),
             velocity: Vec2::new(0.0, 0.0),
             flap_counter: 0,
             flap_delta: 0.0,
             is_mouse_down: false,
+            instructions_visible: true,
+            allow_gravity: false,
         })
+    }
+
+    fn start_game(&mut self) {
+        if self.instructions_visible {
+            self.instructions_visible = false;
+        }
+        self.allow_gravity = true;
     }
 
     fn flap(&mut self) {
@@ -371,6 +387,9 @@ impl Scene for GameScene {
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             if !self.is_mouse_down {
+                if self.instructions_visible {
+                    self.start_game();
+                }
                 self.flap();
                 self.is_mouse_down = true;
             }
@@ -378,14 +397,16 @@ impl Scene for GameScene {
             self.is_mouse_down = false;
         }
 
-        self.velocity.y = self.velocity.y + GRAVITY / 30.0;
-        self.position.y = self.position.y + self.velocity.y;
-        
-        if self.flap_counter > 0 {
-            self.rotation -= self.flap_delta as f32;
-            self.flap_counter -= 1; 
-        } if self.rotation < 1.3 {
-            self.rotation += 0.05;
+        if self.allow_gravity {
+            self.velocity.y = self.velocity.y + GRAVITY / 30.0;
+            self.position.y = self.position.y + self.velocity.y;
+
+            if self.flap_counter > 0 {
+                self.rotation -= self.flap_delta as f32;
+                self.flap_counter -= 1; 
+            } if self.rotation < 1.3 {
+                self.rotation += 0.05;
+            }
         }
 
         self.background.update();
@@ -398,6 +419,15 @@ impl Scene for GameScene {
         graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);
+
+        if self.instructions_visible {
+            graphics::draw(ctx, &self.instructions, DrawParams::new()
+                .position(Vec2::new(SCREEN_WIDTH as f32/2.0, 325.0))
+                .origin(Vec2::new(self.instructions.width() as f32/2.0,self.instructions.height() as f32/2.0)));
+            graphics::draw(ctx, &self.get_ready, DrawParams::new()
+                .position(Vec2::new(SCREEN_WIDTH as f32/2.0, 100.0))
+                .origin(Vec2::new(self.get_ready.width() as f32/2.0,self.get_ready.height() as f32/2.0)));
+        }
 
         graphics::draw(
             ctx,
