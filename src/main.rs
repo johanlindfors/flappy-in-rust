@@ -259,7 +259,6 @@ impl Bird {
 struct Pipe {
     position: Vec2,
     source_rect: Rectangle,
-    texture: Texture,
 }
 
 impl Pipe {
@@ -267,12 +266,11 @@ impl Pipe {
         Ok(Pipe {
             position: position,
             source_rect: source_rect,
-            texture: Texture::new(ctx, "./resources/pipes.png")?
         })
     }
 
-    fn draw(&mut self, ctx: &mut Context, position: Vec2) {
-        graphics::draw(ctx, &self.texture, DrawParams::new()
+    fn draw(&mut self, ctx: &mut Context, position: Vec2, texture: &Texture) {
+        graphics::draw(ctx, texture, DrawParams::new()
                 .position(Vec2::new(self.position.x + position.x, self.position.y + position.y))
                 .clip(self.source_rect));
     }
@@ -309,9 +307,9 @@ impl PipeGroup {
         }
     }
 
-    fn draw(&mut self, ctx: &mut Context) {
-        self.top_pipe.draw(ctx, self.position);
-        self.bottom_pipe.draw(ctx, self.position);
+    fn draw(&mut self, ctx: &mut Context, texture: &Texture) {
+        self.top_pipe.draw(ctx, self.position, texture);
+        self.bottom_pipe.draw(ctx, self.position, texture);
     }
 
     fn reset(&mut self, x: f32, y: f32) {
@@ -347,7 +345,7 @@ impl PipeGenerator {
     fn should_spawn_pipe(&mut self) -> bool {
         if self.enabled {
             self.counter += 1;
-            if self.counter >= 60 {
+            if self.counter >= 80 {
                 self.counter = 0;
                 return true;
             }
@@ -431,6 +429,7 @@ impl Scene for TitleScene {
 struct GameScene {
     sky_texture: Texture,
     background: Background,
+    pipes_texture: Texture,
 
     instructions: Texture,
     get_ready: Texture,
@@ -461,6 +460,7 @@ impl GameScene {
         Ok(GameScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             background: Background::new(ctx)?,
+            pipes_texture: Texture::new(ctx, "./resources/pipes.png")?,
             get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
             instructions: Texture::new(ctx, "./resources/instructions.png")?,
             
@@ -651,7 +651,7 @@ impl Scene for GameScene {
         }
 
         for pipe_group in &mut self.pipes {
-            pipe_group.draw(ctx);
+            pipe_group.draw(ctx, &self.pipes_texture);
         }
 
         graphics::draw(ctx, &self.score_text, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 50.0));
