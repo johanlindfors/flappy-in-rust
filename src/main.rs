@@ -232,6 +232,10 @@ impl Bird {
 
             self.velocity.y = self.velocity.y + GRAVITY / 30.0;
             self.position.y = self.position.y + self.velocity.y;
+            if self.position.y <= 12.0 {
+                self.position.y = 12.0;
+                self.velocity.y = 0.0;
+            }
 
             if self.flap_counter > 0 {
                 self.rotation -= self.flap_delta as f32;
@@ -273,6 +277,16 @@ impl Pipe {
         graphics::draw(ctx, texture, DrawParams::new()
                 .position(Vec2::new(self.position.x + position.x, self.position.y + position.y))
                 .clip(self.source_rect));
+    }
+}
+
+impl PhysicsBody for Pipe {
+    fn get_collision_rect(&mut self) -> Rectangle {
+        Rectangle::new(self.position.x, self.position.y, 54.0, 320.0)
+    }
+
+    fn collides_with(&mut self, obj: &Rectangle) -> bool {
+        check_collision(&self.get_collision_rect(), obj)
     }
 }
 
@@ -318,6 +332,21 @@ impl PipeGroup {
         self.alive = true;
         self.enabled = true;
         self.has_scored = false;
+    }
+}
+
+impl PhysicsBody for PipeGroup {
+    fn get_collision_rect(&mut self) -> Rectangle {
+        Rectangle::new(0.0, 0.0, 0.0, 0.0)
+    }
+
+    fn collides_with(&mut self, obj: &Rectangle) -> bool {
+        let relative_rect = Rectangle::new(obj.x,
+                                           obj.y - 160.0,
+                                           obj.width,
+                                           obj.height);
+        self.top_pipe.collides_with(&relative_rect) ||
+        self.bottom_pipe.collides_with(&relative_rect)
     }
 }
 
@@ -502,7 +531,6 @@ impl GameScene {
 
     fn check_for_collisions(&mut self) {
         if self.bird.collides_with(&self.background.get_collision_rect()) {
-        // if check_collision(&self.background.get_collision_rect(), &self.bird.get_collision_rect()) {
             self.bird.allow_gravity = false;
             self.background.scroll = false;
 
@@ -511,6 +539,12 @@ impl GameScene {
 
             for pipe_group in &mut self.pipes {
                 pipe_group.enabled = false;
+            }
+        }
+
+        for pipe_group in &mut self.pipes {
+            if pipe_group.collides_with(&self.bird.get_collision_rect()) {
+                panic!("Collision");
             }
         }
     }
