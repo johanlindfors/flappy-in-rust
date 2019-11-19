@@ -341,8 +341,8 @@ impl PhysicsBody for PipeGroup {
     }
 
     fn collides_with(&mut self, obj: &Rectangle) -> bool {
-        let relative_rect = Rectangle::new(obj.x,
-                                           obj.y - 160.0,
+        let relative_rect = Rectangle::new(obj.x - self.position.x - 27.0,
+                                           obj.y - self.position.y - 12.0,
                                            obj.width,
                                            obj.height);
         self.top_pipe.collides_with(&relative_rect) ||
@@ -530,6 +530,12 @@ impl GameScene {
     }
 
     fn check_for_collisions(&mut self) {
+        for pipe_group in &mut self.pipes {
+            if pipe_group.collides_with(&self.bird.get_collision_rect()) {
+                panic!("Collision");
+            }
+        }
+
         if self.bird.collides_with(&self.background.get_collision_rect()) {
             self.bird.allow_gravity = false;
             self.background.scroll = false;
@@ -539,12 +545,6 @@ impl GameScene {
 
             for pipe_group in &mut self.pipes {
                 pipe_group.enabled = false;
-            }
-        }
-
-        for pipe_group in &mut self.pipes {
-            if pipe_group.collides_with(&self.bird.get_collision_rect()) {
-                panic!("Collision");
             }
         }
     }
