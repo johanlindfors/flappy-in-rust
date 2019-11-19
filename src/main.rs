@@ -181,6 +181,7 @@ struct Bird {
     flap_counter: i32,
     flap_delta: f64,
     allow_gravity: bool,
+    alive: bool,
 }
 
 impl PhysicsBody for Bird {
@@ -207,18 +208,29 @@ impl Bird {
             flap_counter: 0,
             flap_delta: 0.0,
             allow_gravity: false,
+            alive: false,
         })
     }
 
     fn flap(&mut self) {
-        self.velocity.y = -7.5;
-        self.flap_counter = 6;
-        self.tween_rotation();
+        if self.alive {
+            self.velocity.y = -7.5;
+            self.flap_counter = 6;
+            self.tween_rotation();
+        }
+    }
+
+    fn kill(&mut self) {
+        if self.alive && self.velocity.y < 0.0 {
+            self.velocity.y = 0.0;
+        }
+        self.alive = false;
     }
 
     fn reset(&mut self) {
         self.velocity = Vec2::new(0.0, 0.0);
         self.position = Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0);
+        self.alive = true;
     }
 
     fn tween_rotation(&mut self) {
@@ -228,7 +240,9 @@ impl Bird {
 
     fn update(&mut self) {
         if self.allow_gravity {
-            self.animation.tick();
+            if self.alive {
+                self.animation.tick();
+            }
 
             self.velocity.y = self.velocity.y + GRAVITY / 30.0;
             self.position.y = self.position.y + self.velocity.y;
@@ -530,16 +544,31 @@ impl GameScene {
     }
 
     fn check_for_collisions(&mut self) {
-        for pipe_group in &mut self.pipes {
-            if pipe_group.collides_with(&self.bird.get_collision_rect()) {
-                panic!("Collision");
+        let mut bird_died = false;
+        if self.bird.alive {
+            for pipe_group in &mut self.pipes {
+                if pipe_group.collides_with(&self.bird.get_collision_rect()) {
+                    bird_died = true;
+                    continue;
+                }
+            }
+        }
+
+        if bird_died {
+            self.bird.kill(); 
+
+            self.pipe_generator.stop();
+            self.background.scroll = false;
+
+            for pipe_group in &mut self.pipes {
+                pipe_group.enabled = false;
             }
         }
 
         if self.bird.collides_with(&self.background.get_collision_rect()) {
             self.bird.allow_gravity = false;
             self.background.scroll = false;
-
+            
             self.game_over = true;
             self.pipe_generator.stop();
 
