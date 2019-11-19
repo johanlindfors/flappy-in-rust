@@ -1,9 +1,9 @@
 use rand::{thread_rng, Rng};
-use tetra::audio::Sound;
+//use tetra::audio::Sound;
 use tetra::graphics::ScreenScaling;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Rectangle, Vec2};
 use tetra::graphics::animation::Animation;
-use tetra::input::{self, Key, MouseButton};
+use tetra::input::{self, MouseButton};
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
 use std::f64;
@@ -30,7 +30,7 @@ trait Scene {
 enum Transition {
     None,
     Push(Box<dyn Scene>),
-    Pop,
+    //Pop,
 }
 
 // Boxing/dynamic dispatch could be avoided here by defining an enum for all
@@ -59,9 +59,9 @@ impl State for SceneManager {
                 Transition::Push(s) => {
                     self.scenes.push(s);
                 }
-                Transition::Pop => {
-                    self.scenes.pop();
-                }
+                // Transition::Pop => {
+                //     self.scenes.pop();
+                // }
             },
             None => window::quit(ctx),
         }
@@ -280,7 +280,7 @@ struct Pipe {
 }
 
 impl Pipe {
-    fn new(ctx: &mut Context, position: Vec2, source_rect: Rectangle) -> tetra::Result<Pipe> {
+    fn new(position: Vec2, source_rect: Rectangle) -> tetra::Result<Pipe> {
         Ok(Pipe {
             position: position,
             source_rect: source_rect,
@@ -314,18 +314,18 @@ struct PipeGroup {
 }
 
 impl PipeGroup {
-    fn new(ctx: &mut Context) -> tetra::Result<PipeGroup> {
+    fn new() -> tetra::Result<PipeGroup> {
         Ok(PipeGroup {
             position: Vec2::new(0.0, 0.0),
-            top_pipe: Pipe::new(ctx, Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
-            bottom_pipe: Pipe::new(ctx, Vec2::new(0.0, 440.0), Rectangle::new(54.0, 0.0, 54.0, 320.0))?,
+            top_pipe: Pipe::new(Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
+            bottom_pipe: Pipe::new(Vec2::new(0.0, 440.0), Rectangle::new(54.0, 0.0, 54.0, 320.0))?,
             alive: false,
             enabled: false,
             has_scored: false,
         })
     }
 
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, _ctx: &mut Context) {
         if self.alive && self.enabled {
             self.position.x -= 4.0;
         }
@@ -479,14 +479,12 @@ struct GameScene {
 
     bird: Bird,
     
-    flap_sound: Sound,
-    ground_hit_sound: Sound,
-    pipe_hit_sound: Sound,
-    score_sound: Sound,
-    ouch_sound: Sound,
+    //flap_sound: Sound,
+    //ground_hit_sound: Sound,
+    //pipe_hit_sound: Sound,
+    //score_sound: Sound,
+    //ouch_sound: Sound,
 
-    drop_timer: i32,
-    move_timer: i32,
     score: i32,
     score_text: Text,
 
@@ -509,13 +507,11 @@ impl GameScene {
             
             bird: Bird::new(ctx)?,
 
-            flap_sound: Sound::new("./resources/flap.wav")?,
-            ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
-            pipe_hit_sound: Sound::new("./resources/pipe-hit.wav")?,
-            score_sound: Sound::new("./resources/score.wav")?,
-            ouch_sound: Sound::new("./resources/ouch.wav")?,
-            drop_timer: 0,
-            move_timer: 0,
+            // flap_sound: Sound::new("./resources/flap.wav")?,
+            // ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
+            // pipe_hit_sound: Sound::new("./resources/pipe-hit.wav")?,
+            // score_sound: Sound::new("./resources/score.wav")?,
+            // ouch_sound: Sound::new("./resources/ouch.wav")?,
             score: 0,
             score_text: Text::new("Score: 0", Font::default(), 16.0),
 
@@ -577,78 +573,6 @@ impl GameScene {
             }
         }
     }
-
-    // fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
-    //     for (x, y) in self.block.segments() {
-    //         let new_x = x + move_x;
-    //         let new_y = y + move_y;
-
-    //         if new_y < 0 {
-    //             continue;
-    //         }
-
-    //         if new_x < 0
-    //             || new_x > 9
-    //             || new_y > 21
-    //             || self.board[new_y as usize][new_x as usize].is_some()
-    //         {
-    //             return true;
-    //         }
-    //     }
-
-    //     false
-    // }
-
-    // fn lock(&mut self) {
-    //     let color = self.block.color();
-
-    //     for (x, y) in self.block.segments() {
-    //         if x >= 0 && x <= 9 && y >= 0 && y <= 21 {
-    //             self.board[y as usize][x as usize] = Some(color);
-    //         }
-    //     }
-    // }
-
-    // fn check_for_clears(&mut self) -> bool {
-    //     let mut cleared = false;
-
-    //     'outer: for y in 0..22 {
-    //         for x in 0..10 {
-    //             if self.board[y][x].is_none() {
-    //                 continue 'outer;
-    //             }
-    //         }
-
-    //         cleared = true;
-
-    //         self.score += 1;
-    //         self.score_text
-    //             .set_content(format!("Score: {}", self.score));
-
-    //         for clear_y in (0..=y).rev() {
-    //             if clear_y > 0 {
-    //                 self.board[clear_y] = self.board[clear_y - 1];
-    //             } else {
-    //                 self.board[clear_y] = [None; 10];
-    //             }
-    //         }
-    //     }
-
-    //     cleared
-    // }
-
-    // fn check_for_game_over(&self) -> bool {
-    //     self.board[0].iter().any(Option::is_some) || self.board[1].iter().any(Option::is_some)
-    // }
-
-    // fn board_blocks(&self) -> impl Iterator<Item = (i32, i32, Color)> + '_ {
-    //     self.board.iter().enumerate().flat_map(|(y, row)| {
-    //         row.iter()
-    //             .enumerate()
-    //             .filter(|(_, segment)| segment.is_some())
-    //             .map(move |(x, segment)| (x as i32, y as i32, segment.unwrap()))
-    //     })
-    // }
 }
 
 impl Scene for GameScene {
@@ -690,7 +614,7 @@ impl Scene for GameScene {
                     return Ok(Transition::None);
                 }
             }
-            let mut pipe_group = PipeGroup::new(ctx)?;
+            let mut pipe_group = PipeGroup::new()?;
             pipe_group.reset(SCREEN_WIDTH as f32, y);
             self.pipes.push(pipe_group);
         }
