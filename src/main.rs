@@ -1,5 +1,5 @@
 use rand::{thread_rng, Rng};
-//use tetra::audio::Sound;
+use tetra::audio::{self, Sound, SoundInstance};
 use tetra::graphics::ScreenScaling;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Rectangle, Vec2};
 use tetra::graphics::animation::Animation;
@@ -479,11 +479,11 @@ struct GameScene {
 
     bird: Bird,
     
-    //flap_sound: Sound,
-    //ground_hit_sound: Sound,
-    //pipe_hit_sound: Sound,
-    //score_sound: Sound,
-    //ouch_sound: Sound,
+    flap_sound: Sound,
+    ground_hit_sound: Sound,
+    pipe_hit_sound: Sound,
+    score_sound: Sound,
+    ouch_sound: Sound,
 
     score: i32,
     score_text: Text,
@@ -507,11 +507,12 @@ impl GameScene {
             
             bird: Bird::new(ctx)?,
 
-            // flap_sound: Sound::new("./resources/flap.wav")?,
-            // ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
-            // pipe_hit_sound: Sound::new("./resources/pipe-hit.wav")?,
-            // score_sound: Sound::new("./resources/score.wav")?,
-            // ouch_sound: Sound::new("./resources/ouch.wav")?,
+            flap_sound: Sound::new("./resources/flap.wav")?,
+            ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
+            pipe_hit_sound: Sound::new("./resources/pipe-hit.wav")?,
+            score_sound: Sound::new("./resources/score.wav")?,
+            ouch_sound: Sound::new("./resources/ouch.wav")?,
+
             score: 0,
             score_text: Text::new("Score: 0", Font::default(), 16.0),
 
@@ -539,7 +540,7 @@ impl GameScene {
         self.score_text.set_content(format!("Score: {}", self.score));
     }
 
-    fn check_for_collisions(&mut self) {
+    fn check_for_collisions(&mut self, ctx: &mut Context) -> tetra::Result {
         let mut bird_died = false;
         if self.bird.alive {
             for pipe_group in &mut self.pipes {
@@ -551,6 +552,7 @@ impl GameScene {
         }
 
         if bird_died {
+            self.pipe_hit_sound.play(ctx)?;
             self.bird.kill(); 
 
             self.pipe_generator.stop();
@@ -561,7 +563,8 @@ impl GameScene {
             }
         }
 
-        if self.bird.collides_with(&self.background.get_collision_rect()) {
+        if !self.game_over && self.bird.collides_with(&self.background.get_collision_rect()) {
+            self.ground_hit_sound.play(ctx)?;
             self.bird.allow_gravity = false;
             self.background.scroll = false;
             
@@ -572,6 +575,8 @@ impl GameScene {
                 pipe_group.enabled = false;
             }
         }
+
+        Ok(())
     }
 }
 
@@ -584,6 +589,7 @@ impl Scene for GameScene {
                 if self.instructions_visible || self.game_over {
                     self.start_game();
                 }
+                self.flap_sound.play(ctx)?;
                 self.bird.flap();
                 self.is_mouse_down = true;
             }
@@ -592,8 +598,9 @@ impl Scene for GameScene {
         }
 
         for pipe_group in &mut self.pipes {
-            if !pipe_group.has_scored && pipe_group.position.x <= self.bird.position.x {
+            if !pipe_group.has_scored && pipe_group.position.x + 27.0 <= self.bird.position.x {
                 pipe_group.has_scored = true;
+                self.score_sound.play(ctx)?;
                 self.score += 1;
                 self.score_text.set_content(format!("Score: {}", self.score));
             }
@@ -602,7 +609,7 @@ impl Scene for GameScene {
 
         self.background.update();
 
-        self.check_for_collisions();
+        self.check_for_collisions(ctx);
 
         if self.pipe_generator.should_spawn_pipe() {
             let mut rng = thread_rng();
