@@ -444,31 +444,57 @@ impl PipeGenerator {
     }
 }
 
+// === Button ===
+
+struct Button {
+    texture: Texture,
+    rect: Rectangle,
+}
+
+impl Button {
+    fn new(ctx: &mut Context, centered_position: Vec2) -> tetra::Result<Button> {
+        let texture = Texture::new(ctx, "./resources/start-button.png")?;
+        let rect = Rectangle::new(
+            centered_position.x - texture.width() as f32 / 2.0, 
+            centered_position.y - texture.height() as f32 / 2.0,
+            texture.width() as f32,
+            texture.height() as f32    
+        );
+
+        Ok(Button {
+            texture: texture,
+            rect: rect,
+        })
+    }
+
+    fn contains(&mut self, point: Vec2) -> bool {
+        point.x >= self.rect.x &&
+        point.x <= (self.rect.x + self.rect.width) &&
+        point.y >= self.rect.y &&
+        point.y <= (self.rect.y + self.rect.height)
+    }
+
+    fn draw(&mut self, ctx: &mut Context) {
+        graphics::draw(ctx, &self.texture, Vec2::new(self.rect.x, self.rect.y));
+    }
+}
+
 // === Title Scene ===
 
 struct TitleScene {
     sky_texture: Texture,
     title: Texture,
-    start: Texture, 
     bird: Animation,
     background: Background,
-    start_rect: Rectangle,
+    button: Button,
 }
 
 impl TitleScene {
     fn new(ctx: &mut Context) -> tetra::Result<TitleScene> {
-        let button_texture = Texture::new(ctx, "./resources/start-button.png")?;
-        let start_rect = Rectangle::new(
-            SCREEN_WIDTH as f32/2.0 - button_texture.width() as f32 / 2.0, 
-            300.0 - button_texture.height() as f32 / 2.0,
-            button_texture.width() as f32,
-            button_texture.height() as f32    
-        );
 
         Ok(TitleScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             title: Texture::new(ctx, "./resources/title.png")?,
-            start: button_texture,
             
             bird: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
@@ -476,15 +502,9 @@ impl TitleScene {
                 5,
             ),
             background: Background::new(ctx)?,
-            start_rect: start_rect
-        })
-    }
 
-    fn button_contains(&mut self, point: Vec2) -> bool {
-        point.x >= self.start_rect.x &&
-        point.x <= (self.start_rect.x + self.start_rect.width) &&
-        point.y >= self.start_rect.y &&
-        point.y <= (self.start_rect.y + self.start_rect.height)
+            button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32/2.0, 300.0))?,
+        })
     }
 }
 
@@ -494,7 +514,7 @@ impl Scene for TitleScene {
         self.background.update();
 
         let mouse_position = input::get_mouse_position(ctx);
-        if input::is_mouse_button_down(ctx, MouseButton::Left) &&  self.button_contains(mouse_position) {
+        if input::is_mouse_button_down(ctx, MouseButton::Left) &&  self.button.contains(mouse_position) {
             Ok(Transition::Push(Box::new(GameScene::new(ctx)?)))
         } else {
             Ok(Transition::None)
@@ -509,7 +529,8 @@ impl Scene for TitleScene {
         graphics::draw(ctx, &self.bird, Vec2::new(230.0,105.0));
 
         graphics::draw(ctx, &self.title, Vec2::new(30.0, 100.0));
-        graphics::draw(ctx, &self.start, Vec2::new(self.start_rect.x, self.start_rect.y));
+
+        self.button.draw(ctx);
     }
 }
 
