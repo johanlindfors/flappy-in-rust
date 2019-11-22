@@ -3,7 +3,7 @@ use tetra::audio::Sound;
 use tetra::graphics::ScreenScaling;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Rectangle, Vec2};
 use tetra::graphics::animation::Animation;
-use tetra::input::{self, MouseButton};
+use tetra::input::{self, Key, MouseButton};
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
 use std::f64;
@@ -16,7 +16,6 @@ const SCROLL_SPEED: f32 = 3.0;
 fn main() -> tetra::Result {
     ContextBuilder::new("Flappy Bird", SCREEN_WIDTH, SCREEN_HEIGHT)
         .resizable(false)
-        .quit_on_escape(true)
         .build()?
         .run_with(SceneManager::new)
 }
@@ -31,7 +30,7 @@ trait Scene {
 enum Transition {
     None,
     Push(Box<dyn Scene>),
-    //Pop,
+    Pop,
 }
 
 // Boxing/dynamic dispatch could be avoided here by defining an enum for all
@@ -60,9 +59,9 @@ impl State for SceneManager {
                 Transition::Push(s) => {
                     self.scenes.push(s);
                 }
-                // Transition::Pop => {
-                //     self.scenes.pop();
-                // }
+                Transition::Pop => {
+                    self.scenes.pop();
+                }
             },
             None => window::quit(ctx),
         }
@@ -586,6 +585,8 @@ impl Scene for TitleScene {
         let mouse_position = input::get_mouse_position(ctx);
         if input::is_mouse_button_down(ctx, MouseButton::Left) &&  self.button.contains(mouse_position) {
             Ok(Transition::Push(Box::new(GameScene::new(ctx)?)))
+        } else if input::is_key_pressed(ctx, Key::Escape) {
+            Ok(Transition::Pop)
         } else {
             Ok(Transition::None)
         }
@@ -788,6 +789,10 @@ impl Scene for GameScene {
                 pipe_group.reset(SCREEN_WIDTH as f32, y);
                 self.pipes.push(pipe_group);
             }
+        }
+
+        if input::is_key_pressed(ctx, Key::Escape) {
+            return Ok(Transition::Pop);
         }
 
         Ok(Transition::None)
