@@ -11,6 +11,7 @@ use std::f64;
 const SCREEN_WIDTH: i32 = 288;
 const SCREEN_HEIGHT: i32 = 505;
 const GRAVITY: f32 = 9.1;
+const SCROLL_SPEED: f32 = 3.0;
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Flappy Bird", SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -122,7 +123,7 @@ impl Ground {
 
     fn update(&mut self) {
         if self.scroll {
-            self.rect.x += 4.0 ;
+            self.rect.x += SCROLL_SPEED;
         }
     }
 
@@ -166,9 +167,9 @@ impl Background {
 
     fn update(&mut self) {
         if self.scroll {
-            self.forest_rect.x += 3.0 ;
-            self.cityscape_rect.x += 2.0 ;
-            self.cloud_rect.x += 1.0 ;
+            self.forest_rect.x += SCROLL_SPEED * 0.75;
+            self.cityscape_rect.x += SCROLL_SPEED * 0.5;
+            self.cloud_rect.x += SCROLL_SPEED * 0.25;
         }
     }
 
@@ -234,7 +235,7 @@ impl Bird {
 
     fn flap(&mut self) {
         if self.alive {
-            self.velocity.y = -7.5;
+            self.velocity.y = -6.5;
             self.flap_counter = 6;
             self.tween_rotation();
         }
@@ -349,7 +350,7 @@ impl PipeGroup {
 
     fn update(&mut self, _ctx: &mut Context) {
         if self.alive && self.enabled {
-            self.position.x -= 4.0;
+            self.position.x -= SCROLL_SPEED;
         }
         if self.position.x < -54.0 {
             self.alive = false;
