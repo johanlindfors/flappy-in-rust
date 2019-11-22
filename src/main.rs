@@ -93,23 +93,15 @@ fn check_collision(rect1: &Rectangle, rect2: &Rectangle) -> bool {
     rect1.y + rect1.height > rect2.y
 }
 
-// === Parallax ground ===
+// === Scrolling ground ===
 
-struct Background {
-    ground_texture: Texture,
-    forest_texture: Texture,
-    cityscape_texture: Texture,
-    cloud_texture: Texture,
-
-    ground_rect: Rectangle,
-    forest_rect: Rectangle,
-    cityscape_rect: Rectangle,
-    cloud_rect: Rectangle,
-
-    scroll: bool
+struct Ground {
+    texture: Texture,
+    rect: Rectangle,
+    scroll: bool,
 }
 
-impl PhysicsBody for Background {
+impl PhysicsBody for Ground {
     fn get_collision_rect(&mut self) -> Rectangle {
         Rectangle::new(0.0, 400.0, SCREEN_WIDTH as f32, 112.0)
     }
@@ -119,12 +111,46 @@ impl PhysicsBody for Background {
     }
 }
 
+impl Ground {
+    fn new(ctx: &mut Context) -> tetra::Result<Ground> {
+        Ok( Ground {
+            texture: Texture::new(ctx, "./resources/ground.png")?,
+            rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
+            scroll: true,
+        })
+    }
+
+    fn update(&mut self) {
+        if self.scroll {
+            self.rect.x += 4.0 ;
+        }
+    }
+
+    fn draw(&mut self, ctx: &mut Context) {
+        graphics::draw(ctx, &self.texture,
+            DrawParams::new()
+            .position(Vec2::new(0.0, 400.0))
+            .clip(self.rect));
+    }
+}
+
+// === Parallax background ===
+
+struct Background {
+    forest_texture: Texture,
+    cityscape_texture: Texture,
+    cloud_texture: Texture,
+
+    forest_rect: Rectangle,
+    cityscape_rect: Rectangle,
+    cloud_rect: Rectangle,
+
+    scroll: bool
+}
+
 impl Background {
     fn new(ctx: &mut Context) -> tetra::Result<Background> {
         Ok( Background {
-            ground_texture: Texture::new(ctx, "./resources/ground.png")?,
-            ground_rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
-
             forest_texture: Texture::new(ctx, "./resources/trees.png")?,
             forest_rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
 
@@ -140,7 +166,6 @@ impl Background {
 
     fn update(&mut self) {
         if self.scroll {
-            self.ground_rect.x += 4.0 ;
             self.forest_rect.x += 3.0 ;
             self.cityscape_rect.x += 2.0 ;
             self.cloud_rect.x += 1.0 ;
@@ -163,11 +188,6 @@ impl Background {
             DrawParams::new()
             .position(Vec2::new(0.0, 360.0))
             .clip(self.forest_rect));
-
-        graphics::draw(ctx, &self.ground_texture,
-            DrawParams::new()
-            .position(Vec2::new(0.0, 400.0))
-            .clip(self.ground_rect));
     }
 }
 
@@ -532,6 +552,7 @@ struct TitleScene {
     title: Texture,
     bird: Animation,
     background: Background,
+    ground: Ground,
     button: Button,
 }
 
@@ -548,6 +569,7 @@ impl TitleScene {
                 5,
             ),
             background: Background::new(ctx)?,
+            ground: Ground::new(ctx)?,
 
             button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32/2.0, 300.0))?,
         })
@@ -558,6 +580,7 @@ impl Scene for TitleScene {
 
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.background.update();
+        self.ground.update();
 
         let mouse_position = input::get_mouse_position(ctx);
         if input::is_mouse_button_down(ctx, MouseButton::Left) &&  self.button.contains(mouse_position) {
@@ -571,6 +594,7 @@ impl Scene for TitleScene {
         graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);
+        self.ground.draw(ctx);
 
         graphics::draw(ctx, &self.bird, Vec2::new(230.0,105.0));
 
@@ -585,6 +609,7 @@ impl Scene for TitleScene {
 struct GameScene {
     sky_texture: Texture,
     background: Background,
+    ground: Ground,
     pipes_texture: Texture,
 
     instructions: Texture,
@@ -619,6 +644,7 @@ impl GameScene {
         Ok(GameScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             background: Background::new(ctx)?,
+            ground: Ground::new(ctx)?,
             pipes_texture: Texture::new(ctx, "./resources/pipes.png")?,
             get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
             instructions: Texture::new(ctx, "./resources/instructions.png")?,
@@ -648,6 +674,7 @@ impl GameScene {
         self.instructions_visible = true;
         self.pipes.clear();
         self.background.scroll = true;
+        self.ground.scroll = true;
         self.bird.reset();
         self.score = 0;
         self.game_over = false;
@@ -680,16 +707,18 @@ impl GameScene {
 
             self.pipe_generator.stop();
             self.background.scroll = false;
+            self.ground.scroll = false;
 
             for pipe_group in &mut self.pipes {
                 pipe_group.enabled = false;
             }
         }
 
-        if !self.game_over && self.bird.collides_with(&self.background.get_collision_rect()) {
+        if !self.game_over && self.bird.collides_with(&self.ground.get_collision_rect()) {
             assert!(self.ground_hit_sound.play(ctx).is_ok());
             self.bird.allow_gravity = false;
             self.background.scroll = false;
+            self.ground.scroll = false;
 
             self.game_over = true;
             self.pipe_generator.stop();
@@ -740,6 +769,7 @@ impl Scene for GameScene {
             }
 
             self.background.update();
+            self.ground.update();
 
             self.check_for_collisions(ctx);
 
@@ -780,6 +810,8 @@ impl Scene for GameScene {
         for pipe_group in &mut self.pipes {
             pipe_group.draw(ctx, &self.pipes_texture);
         }
+
+        self.ground.draw(ctx);
 
         if !self.game_over {
             let text_bounds = self.score_text.get_bounds(ctx).unwrap();
