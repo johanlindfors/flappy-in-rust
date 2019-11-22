@@ -663,7 +663,7 @@ impl GameScene {
         self.pipe_generator.start();
     }
 
-    fn check_for_collisions(&mut self, ctx: &mut Context) -> tetra::Result {
+    fn check_for_collisions(&mut self, ctx: &mut Context) {
         let mut bird_died = false;
         if self.bird.alive {
             for pipe_group in &mut self.pipes {
@@ -675,7 +675,7 @@ impl GameScene {
         }
 
         if bird_died {
-            self.pipe_hit_sound.play(ctx)?;
+            assert!(self.pipe_hit_sound.play(ctx).is_ok());
             self.bird.kill();
 
             self.pipe_generator.stop();
@@ -687,7 +687,7 @@ impl GameScene {
         }
 
         if !self.game_over && self.bird.collides_with(&self.background.get_collision_rect()) {
-            self.ground_hit_sound.play(ctx)?;
+            assert!(self.ground_hit_sound.play(ctx).is_ok());
             self.bird.allow_gravity = false;
             self.background.scroll = false;
 
@@ -703,8 +703,6 @@ impl GameScene {
                 pipe_group.enabled = false;
             }
         }
-
-        Ok(())
     }
 }
 
