@@ -378,7 +378,7 @@ struct Scoreboard {
     button: Button,
 
     score_text: Text,
-    score_text_origin: Vec2,
+    score_origin: Vec2,
 
     highscore_text: Text,
     highscore_origin: Vec2,
@@ -401,9 +401,9 @@ impl Scoreboard {
 
             button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32/ 2.0, 300.0))?,
 
-            score_text: Text::new("0", Font::default(), 16.0),
-            score_text_origin: Vec2::new(0.0, 0.0),
-            highscore_text: Text::new("0", Font::default(), 16.0),
+            score_text: Text::new("0", Font::default(), 26.0),
+            score_origin: Vec2::new(0.0, 0.0),
+            highscore_text: Text::new("0", Font::default(), 26.0),
             highscore_origin: Vec2::new(0.0, 0.0),
         })
     }
@@ -411,11 +411,11 @@ impl Scoreboard {
     fn set_score(&mut self, ctx: &mut Context, score: i32) {
         self.score_text.set_content(format!("{}", score));
         let mut bounds = self.score_text.get_bounds(ctx).unwrap();
-        self.score_text_origin = Vec2::new(bounds.width, 0.0);
+        self.score_origin = Vec2::new(-bounds.width, 0.0);
 
-        self.highscore_text.set_content(format!("{}", score));
-        bounds = self.highscore_text.get_bounds(ctx).unwrap();
-        self.highscore_origin = Vec2::new(bounds.width, 0.0);
+        // self.highscore_text.set_content(format!("{}", score));
+        let bounds = self.highscore_text.get_bounds(ctx).unwrap();
+        self.highscore_origin = Vec2::new(-bounds.width, 0.0);
     }
 
     fn draw(&mut self, ctx: &mut Context) {
@@ -427,6 +427,15 @@ impl Scoreboard {
                     .origin(self.scoreboard_origin));
         
         self.button.draw(ctx);
+
+        graphics::draw(ctx, &self.score_text, DrawParams::new()
+                .position(Vec2::new(215.0, 176.0))
+                .origin(self.score_origin));
+
+        graphics::draw(ctx, &self.highscore_text, DrawParams::new()
+                .position(Vec2::new(215.0, 222.0))
+                .origin(self.highscore_origin));
+
     }
 }
 
