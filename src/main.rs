@@ -1,5 +1,5 @@
 use rand::{thread_rng, Rng};
-use tetra::audio::{self, Sound, SoundInstance};
+use tetra::audio::Sound;
 use tetra::graphics::ScreenScaling;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Rectangle, Vec2};
 use tetra::graphics::animation::Animation;
@@ -364,6 +364,52 @@ impl PhysicsBody for PipeGroup {
     }
 }
 
+struct Scoreboard {
+    game_over_texture: Texture,
+    game_over_position: Vec2,
+    game_over_origin: Vec2,
+
+    scoreboard_texture: Texture,
+    scoreboard_position: Vec2,
+    scoreboard_origin: Vec2,
+
+    score_text: Text,
+    highscore_text: Text,
+}
+
+impl Scoreboard {
+    fn new(ctx: &mut Context) -> tetra::Result<Scoreboard> {
+        let game_over_texture = Texture::new(ctx, "./resources/gameover.png")?;
+        let scoreboard_texture = Texture::new(ctx, "./resources/scoreboard.png")?;
+        Ok(Scoreboard {
+            game_over_position: Vec2::new(SCREEN_WIDTH as f32/ 2.0, 100.0),
+            game_over_origin:Vec2::new(game_over_texture.width() as f32/ 2.0, 
+                                       game_over_texture.height() as f32/ 2.0),
+            game_over_texture: game_over_texture,
+
+            scoreboard_position: Vec2::new(SCREEN_WIDTH as f32/ 2.0, 200.0),
+            scoreboard_origin:Vec2::new(scoreboard_texture.width() as f32/ 2.0, 
+                                        scoreboard_texture.height() as f32/ 2.0),
+            scoreboard_texture: scoreboard_texture,
+            score_text: Text::new("0", Font::default(), 16.0),
+            highscore_text: Text::new("0", Font::default(), 16.0),
+        })
+    }
+
+    fn set_score(&mut self, score: i32) {
+        self.score_text.set_content(format!("{}", score));
+    }
+
+    fn draw(&mut self, ctx: &mut Context){
+        graphics::draw(ctx, &self.game_over_texture, DrawParams::new()
+                    .position(self.game_over_position)
+                    .origin(self.game_over_origin));
+        graphics::draw(ctx, &self.scoreboard_texture, DrawParams::new()
+                    .position(self.scoreboard_position)
+                    .origin(self.scoreboard_origin));
+    }
+}
+
 struct PipeGenerator {
     counter: i32,
     enabled: bool
@@ -483,7 +529,6 @@ struct GameScene {
     ground_hit_sound: Sound,
     pipe_hit_sound: Sound,
     score_sound: Sound,
-    ouch_sound: Sound,
 
     score: i32,
     score_text: Text,
@@ -494,6 +539,8 @@ struct GameScene {
     pipes: Vec<PipeGroup>,
     game_over: bool,
     pipe_generator: PipeGenerator,
+
+    scoreboard: Scoreboard,
 }
 
 impl GameScene {
@@ -504,15 +551,14 @@ impl GameScene {
             pipes_texture: Texture::new(ctx, "./resources/pipes.png")?,
             get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
             instructions: Texture::new(ctx, "./resources/instructions.png")?,
-            
+
             bird: Bird::new(ctx)?,
 
             flap_sound: Sound::new("./resources/flap.wav")?,
             ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
             pipe_hit_sound: Sound::new("./resources/pipe-hit.wav")?,
             score_sound: Sound::new("./resources/score.wav")?,
-            ouch_sound: Sound::new("./resources/ouch.wav")?,
-
+            
             score: 0,
             score_text: Text::new("Score: 0", Font::default(), 16.0),
 
@@ -521,6 +567,8 @@ impl GameScene {
             pipes: Vec::new(),
             game_over: false,
             pipe_generator: PipeGenerator::new()?,
+
+            scoreboard: Scoreboard::new(ctx)?,
         })
     }
 
@@ -584,46 +632,50 @@ impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.bird.update();
 
-        if input::is_mouse_button_down(ctx, MouseButton::Left) {
-            if !self.is_mouse_down {
-                if self.instructions_visible || self.game_over {
-                    self.start_game();
+        if !self.game_over {
+            if input::is_mouse_button_down(ctx, MouseButton::Left) {
+                if !self.is_mouse_down {
+                    if self.instructions_visible || self.game_over {
+                        self.start_game();
+                    }
+                    self.flap_sound.play(ctx)?;
+                    self.bird.flap();
+                    self.is_mouse_down = true;
                 }
-                self.flap_sound.play(ctx)?;
-                self.bird.flap();
-                self.is_mouse_down = true;
+            } else {
+                self.is_mouse_down = false;
             }
-        } else {
-            self.is_mouse_down = false;
-        }
-
-        for pipe_group in &mut self.pipes {
-            if !pipe_group.has_scored && pipe_group.position.x + 27.0 <= self.bird.position.x {
-                pipe_group.has_scored = true;
-                self.score_sound.play(ctx)?;
-                self.score += 1;
-                self.score_text.set_content(format!("Score: {}", self.score));
-            }
-            pipe_group.update(ctx);
-        }
-
-        self.background.update();
-
-        self.check_for_collisions(ctx);
-
-        if self.pipe_generator.should_spawn_pipe() {
-            let mut rng = thread_rng();
-            let y: f32 = rng.gen_range(-100.0, 100.0);
 
             for pipe_group in &mut self.pipes {
-                if !pipe_group.alive {
-                    pipe_group.reset(SCREEN_WIDTH as f32, y);
-                    return Ok(Transition::None);
+                if !pipe_group.has_scored && pipe_group.position.x + 27.0 <= self.bird.position.x {
+                    pipe_group.has_scored = true;
+                    self.score_sound.play(ctx)?;
+                    self.score += 1;
+                    self.score_text.set_content(format!("Score: {}", self.score));
                 }
+                pipe_group.update(ctx);
             }
-            let mut pipe_group = PipeGroup::new()?;
-            pipe_group.reset(SCREEN_WIDTH as f32, y);
-            self.pipes.push(pipe_group);
+
+            self.background.update();
+
+            self.check_for_collisions(ctx);
+
+            if self.pipe_generator.should_spawn_pipe() {
+                let mut rng = thread_rng();
+                let y: f32 = rng.gen_range(-100.0, 100.0);
+
+                for pipe_group in &mut self.pipes {
+                    if !pipe_group.alive {
+                        pipe_group.reset(SCREEN_WIDTH as f32, y);
+                        return Ok(Transition::None);
+                    }
+                }
+                let mut pipe_group = PipeGroup::new()?;
+                pipe_group.reset(SCREEN_WIDTH as f32, y);
+                self.pipes.push(pipe_group);
+            }
+        } else {
+
         }
 
         Ok(Transition::None)
@@ -648,7 +700,11 @@ impl Scene for GameScene {
             pipe_group.draw(ctx, &self.pipes_texture);
         }
 
-        graphics::draw(ctx, &self.score_text, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 50.0));
+        if !self.game_over {
+            graphics::draw(ctx, &self.score_text, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 50.0));
+        } else {
+
+        }
 
         self.bird.draw(ctx);
     }
