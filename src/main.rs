@@ -152,18 +152,18 @@ impl Background {
             DrawParams::new()
             .position(Vec2::new(0.0, 300.0))
             .clip(self.cloud_rect));
-    
+
         graphics::draw(ctx, &self.cityscape_texture,
             DrawParams::new()
             .position(Vec2::new(0.0, 330.0))
             .clip(self.cityscape_rect));
-    
+
 
         graphics::draw(ctx, &self.forest_texture,
             DrawParams::new()
             .position(Vec2::new(0.0, 360.0))
             .clip(self.forest_rect));
-    
+
         graphics::draw(ctx, &self.ground_texture,
             DrawParams::new()
             .position(Vec2::new(0.0, 400.0))
@@ -255,7 +255,7 @@ impl Bird {
 
             if self.flap_counter > 0 {
                 self.rotation -= self.flap_delta as f32;
-                self.flap_counter -= 1; 
+                self.flap_counter -= 1;
             } if self.rotation < 1.3 {
                 self.rotation += 0.05;
             }
@@ -379,9 +379,12 @@ struct Scoreboard {
 
     score_text: Text,
     score_origin: Vec2,
+    score: i32,
 
     highscore_text: Text,
     highscore_origin: Vec2,
+
+    medal: Texture,
 }
 
 impl Scoreboard {
@@ -390,12 +393,12 @@ impl Scoreboard {
         let scoreboard_texture = Texture::new(ctx, "./resources/scoreboard.png")?;
         Ok(Scoreboard {
             game_over_position: Vec2::new(SCREEN_WIDTH as f32/ 2.0, 100.0),
-            game_over_origin:Vec2::new(game_over_texture.width() as f32/ 2.0, 
+            game_over_origin:Vec2::new(game_over_texture.width() as f32/ 2.0,
                                        game_over_texture.height() as f32/ 2.0),
             game_over_texture: game_over_texture,
 
             scoreboard_position: Vec2::new(SCREEN_WIDTH as f32/ 2.0, 200.0),
-            scoreboard_origin:Vec2::new(scoreboard_texture.width() as f32/ 2.0, 
+            scoreboard_origin:Vec2::new(scoreboard_texture.width() as f32/ 2.0,
                                         scoreboard_texture.height() as f32/ 2.0),
             scoreboard_texture: scoreboard_texture,
 
@@ -405,15 +408,20 @@ impl Scoreboard {
             score_origin: Vec2::new(0.0, 0.0),
             highscore_text: Text::new("0", Font::default(), 26.0),
             highscore_origin: Vec2::new(0.0, 0.0),
+            score: 0,
+
+            medal: Texture::new(ctx, "./resources/medals.png")?,
         })
     }
 
-    fn set_score(&mut self, ctx: &mut Context, score: i32) {
-        self.score_text.set_content(format!("{}", score));
-        let mut bounds = self.score_text.get_bounds(ctx).unwrap();
+    fn set_score(&mut self, ctx: &mut Context, score: i32, highscore: i32) {
+        self.score = score;
+
+        self.score_text.set_content(score.to_string());
+        let bounds = self.score_text.get_bounds(ctx).unwrap();
         self.score_origin = Vec2::new(-bounds.width, 0.0);
 
-        // self.highscore_text.set_content(format!("{}", score));
+        self.highscore_text.set_content(highscore.to_string());
         let bounds = self.highscore_text.get_bounds(ctx).unwrap();
         self.highscore_origin = Vec2::new(-bounds.width, 0.0);
     }
@@ -425,7 +433,7 @@ impl Scoreboard {
         graphics::draw(ctx, &self.scoreboard_texture, DrawParams::new()
                     .position(self.scoreboard_position)
                     .origin(self.scoreboard_origin));
-        
+
         self.button.draw(ctx);
 
         graphics::draw(ctx, &self.score_text, DrawParams::new()
@@ -436,6 +444,15 @@ impl Scoreboard {
                 .position(Vec2::new(215.0, 222.0))
                 .origin(self.highscore_origin));
 
+        if self.score >= 10 && self.score < 20 {
+            graphics::draw(ctx, &self.medal, DrawParams::new()
+                .position(Vec2::new(58.0, 185.0))
+                .clip(Rectangle::new(0.0, 0.0, 44.0, 46.0)));
+        } else if self.score >= 20 {
+            graphics::draw(ctx, &self.medal, DrawParams::new()
+                .position(Vec2::new(58.0, 185.0))
+                .clip(Rectangle::new(0.0, 46.0, 44.0, 46.0)));
+        }
     }
 }
 
@@ -468,7 +485,7 @@ impl PipeGenerator {
                 return true;
             }
         }
-        
+
         false
     }
 }
@@ -484,10 +501,10 @@ impl Button {
     fn new(ctx: &mut Context, centered_position: Vec2) -> tetra::Result<Button> {
         let texture = Texture::new(ctx, "./resources/start-button.png")?;
         let rect = Rectangle::new(
-            centered_position.x - texture.width() as f32 / 2.0, 
+            centered_position.x - texture.width() as f32 / 2.0,
             centered_position.y - texture.height() as f32 / 2.0,
             texture.width() as f32,
-            texture.height() as f32    
+            texture.height() as f32
         );
 
         Ok(Button {
@@ -524,7 +541,7 @@ impl TitleScene {
         Ok(TitleScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             title: Texture::new(ctx, "./resources/title.png")?,
-            
+
             bird: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
                 Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
@@ -574,13 +591,14 @@ struct GameScene {
     get_ready: Texture,
 
     bird: Bird,
-    
+
     flap_sound: Sound,
     ground_hit_sound: Sound,
     pipe_hit_sound: Sound,
     score_sound: Sound,
 
     score: i32,
+    highscore: i32,
     score_text: Text,
 
     is_mouse_down: bool,
@@ -611,8 +629,9 @@ impl GameScene {
             ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
             pipe_hit_sound: Sound::new("./resources/pipe-hit.wav")?,
             score_sound: Sound::new("./resources/score.wav")?,
-            
+
             score: 0,
+            highscore: 0,
             score_text: Text::new("0", Font::default(), 36.0),
 
             is_mouse_down: true,
@@ -632,7 +651,7 @@ impl GameScene {
         self.bird.reset();
         self.score = 0;
         self.game_over = false;
-        self.score_text.set_content(format!("{}", self.score));
+        self.score_text.set_content(self.score.to_string());
     }
 
     fn start_game(&mut self) {
@@ -657,7 +676,7 @@ impl GameScene {
 
         if bird_died {
             self.pipe_hit_sound.play(ctx)?;
-            self.bird.kill(); 
+            self.bird.kill();
 
             self.pipe_generator.stop();
             self.background.scroll = false;
@@ -671,11 +690,14 @@ impl GameScene {
             self.ground_hit_sound.play(ctx)?;
             self.bird.allow_gravity = false;
             self.background.scroll = false;
-            
+
             self.game_over = true;
             self.pipe_generator.stop();
 
-            self.scoreboard.set_score(ctx, self.score);
+            if self.score >= self.highscore {
+                self.highscore = self.score;
+            }
+            self.scoreboard.set_score(ctx, self.score, self.highscore);
 
             for pipe_group in &mut self.pipes {
                 pipe_group.enabled = false;
@@ -702,7 +724,7 @@ impl Scene for GameScene {
                     self.flap_sound.play(ctx)?;
                     self.bird.flap();
                 }
-                self.is_mouse_down = true;    
+                self.is_mouse_down = true;
             }
         } else {
             self.is_mouse_down = false;
@@ -714,7 +736,7 @@ impl Scene for GameScene {
                     pipe_group.has_scored = true;
                     self.score_sound.play(ctx)?;
                     self.score += 1;
-                    self.score_text.set_content(format!("{}", self.score));
+                    self.score_text.set_content(self.score.to_string());
                 }
                 pipe_group.update(ctx);
             }
