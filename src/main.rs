@@ -277,7 +277,7 @@ impl Bird {
             if self.flap_counter > 0 {
                 self.rotation -= self.flap_delta as f32;
                 self.flap_counter -= 1;
-            } if self.rotation < 1.3 {
+            } if self.rotation < 1.5 {
                 self.rotation += 0.05;
             }
         }
