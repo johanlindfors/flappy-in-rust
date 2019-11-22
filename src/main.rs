@@ -229,7 +229,9 @@ impl Bird {
 
     fn reset(&mut self) {
         self.velocity = Vec2::new(0.0, 0.0);
-        self.position = Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0);
+        self.position = Vec2::new(100.0, SCREEN_HEIGHT as f32 / 2.0);
+        self.rotation = 0.0;
+        self.flap_delta = 0.0;
         self.alive = true;
     }
 
@@ -239,11 +241,11 @@ impl Bird {
     }
 
     fn update(&mut self) {
-        if self.allow_gravity {
-            if self.alive {
-                self.animation.tick();
-            }
+        if self.alive {
+            self.animation.tick();
+        }
 
+        if self.allow_gravity {
             self.velocity.y = self.velocity.y + GRAVITY / 30.0;
             self.position.y = self.position.y + self.velocity.y;
             if self.position.y <= 12.0 {
@@ -373,8 +375,13 @@ struct Scoreboard {
     scoreboard_position: Vec2,
     scoreboard_origin: Vec2,
 
+    button: Button,
+
     score_text: Text,
+    score_text_origin: Vec2,
+
     highscore_text: Text,
+    highscore_origin: Vec2,
 }
 
 impl Scoreboard {
@@ -391,22 +398,35 @@ impl Scoreboard {
             scoreboard_origin:Vec2::new(scoreboard_texture.width() as f32/ 2.0, 
                                         scoreboard_texture.height() as f32/ 2.0),
             scoreboard_texture: scoreboard_texture,
+
+            button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32/ 2.0, 300.0))?,
+
             score_text: Text::new("0", Font::default(), 16.0),
+            score_text_origin: Vec2::new(0.0, 0.0),
             highscore_text: Text::new("0", Font::default(), 16.0),
+            highscore_origin: Vec2::new(0.0, 0.0),
         })
     }
 
-    fn set_score(&mut self, score: i32) {
+    fn set_score(&mut self, ctx: &mut Context, score: i32) {
         self.score_text.set_content(format!("{}", score));
+        let mut bounds = self.score_text.get_bounds(ctx).unwrap();
+        self.score_text_origin = Vec2::new(bounds.width, 0.0);
+
+        self.highscore_text.set_content(format!("{}", score));
+        bounds = self.highscore_text.get_bounds(ctx).unwrap();
+        self.highscore_origin = Vec2::new(bounds.width, 0.0);
     }
 
-    fn draw(&mut self, ctx: &mut Context){
+    fn draw(&mut self, ctx: &mut Context) {
         graphics::draw(ctx, &self.game_over_texture, DrawParams::new()
                     .position(self.game_over_position)
                     .origin(self.game_over_origin));
         graphics::draw(ctx, &self.scoreboard_texture, DrawParams::new()
                     .position(self.scoreboard_position)
                     .origin(self.scoreboard_origin));
+        
+        self.button.draw(ctx);
     }
 }
 
@@ -566,6 +586,9 @@ struct GameScene {
 
 impl GameScene {
     fn new(ctx: &mut Context) -> tetra::Result<GameScene> {
+        let mut bird = Bird::new(ctx)?;
+        bird.reset();
+
         Ok(GameScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             background: Background::new(ctx)?,
@@ -573,7 +596,7 @@ impl GameScene {
             get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
             instructions: Texture::new(ctx, "./resources/instructions.png")?,
 
-            bird: Bird::new(ctx)?,
+            bird: bird,
 
             flap_sound: Sound::new("./resources/flap.wav")?,
             ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
@@ -581,7 +604,7 @@ impl GameScene {
             score_sound: Sound::new("./resources/score.wav")?,
             
             score: 0,
-            score_text: Text::new("Score: 0", Font::default(), 16.0),
+            score_text: Text::new("0", Font::default(), 36.0),
 
             is_mouse_down: true,
             instructions_visible: true,
@@ -593,20 +616,23 @@ impl GameScene {
         })
     }
 
+    fn reset(&mut self) {
+        self.instructions_visible = true;
+        self.pipes.clear();
+        self.background.scroll = true;
+        self.bird.reset();
+        self.score = 0;
+        self.game_over = false;
+        self.score_text.set_content(format!("{}", self.score));
+    }
+
     fn start_game(&mut self) {
         if self.instructions_visible {
             self.instructions_visible = false;
         }
-        self.bird.reset();
-        self.game_over = false;
         self.bird.allow_gravity = true;
-        self.background.scroll = true;
 
-        self.pipes.clear();
         self.pipe_generator.start();
-
-        self.score = 0;
-        self.score_text.set_content(format!("Score: {}", self.score));
     }
 
     fn check_for_collisions(&mut self, ctx: &mut Context) -> tetra::Result {
@@ -640,6 +666,8 @@ impl GameScene {
             self.game_over = true;
             self.pipe_generator.stop();
 
+            self.scoreboard.set_score(ctx, self.score);
+
             for pipe_group in &mut self.pipes {
                 pipe_group.enabled = false;
             }
@@ -653,26 +681,31 @@ impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.bird.update();
 
-        if !self.game_over {
-            if input::is_mouse_button_down(ctx, MouseButton::Left) {
-                if !self.is_mouse_down {
-                    if self.instructions_visible || self.game_over {
-                        self.start_game();
-                    }
+        if input::is_mouse_button_down(ctx, MouseButton::Left) {
+            if !self.is_mouse_down {
+                let mouse_position = input::get_mouse_position(ctx);
+                if self.instructions_visible {
+                    self.start_game();
+                } else if self.game_over && self.scoreboard.button.contains(mouse_position) {
+                    self.reset();
+                }
+                if self.bird.alive && !self.instructions_visible {
                     self.flap_sound.play(ctx)?;
                     self.bird.flap();
-                    self.is_mouse_down = true;
                 }
-            } else {
-                self.is_mouse_down = false;
+                self.is_mouse_down = true;    
             }
+        } else {
+            self.is_mouse_down = false;
+        }
 
+        if !self.game_over {
             for pipe_group in &mut self.pipes {
                 if !pipe_group.has_scored && pipe_group.position.x + 27.0 <= self.bird.position.x {
                     pipe_group.has_scored = true;
                     self.score_sound.play(ctx)?;
                     self.score += 1;
-                    self.score_text.set_content(format!("Score: {}", self.score));
+                    self.score_text.set_content(format!("{}", self.score));
                 }
                 pipe_group.update(ctx);
             }
@@ -695,8 +728,6 @@ impl Scene for GameScene {
                 pipe_group.reset(SCREEN_WIDTH as f32, y);
                 self.pipes.push(pipe_group);
             }
-        } else {
-
         }
 
         Ok(Transition::None)
@@ -722,9 +753,12 @@ impl Scene for GameScene {
         }
 
         if !self.game_over {
-            graphics::draw(ctx, &self.score_text, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 50.0));
+            let text_bounds = self.score_text.get_bounds(ctx).unwrap();
+            graphics::draw(ctx, &self.score_text, DrawParams::new()
+                .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 10.0))
+                .origin(Vec2::new(text_bounds.width / 2.0, 0.0)));
         } else {
-
+            self.scoreboard.draw(ctx);
         }
 
         self.bird.draw(ctx);
