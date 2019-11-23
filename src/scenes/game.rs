@@ -155,7 +155,7 @@ impl Scene for GameScene {
                 } else if self.game_over && self.scoreboard.button.contains(mouse_position) {
                     self.reset();
                 }
-                if self.bird.alive && !self.instructions_visible {
+                if self.bird.alive && !self.game_over {
                     self.flap_sound.play(ctx)?;
                     self.bird.flap();
                 }
