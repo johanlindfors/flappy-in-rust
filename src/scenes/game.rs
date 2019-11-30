@@ -13,6 +13,7 @@ use crate::prefabs::bird::{Bird};
 use crate::prefabs::pipes::{PipeGroup, PipeGenerator};
 use crate::prefabs::scoreboard::{Scoreboard};
 use crate::systems::physics::PhysicsBody;
+use crate::systems::storage as storage;
 
 pub struct GameScene {
     sky_texture: Texture,
@@ -65,7 +66,7 @@ impl GameScene {
             score_sound: Sound::new("./resources/score.wav")?,
 
             score: 0,
-            highscore: 0,
+            highscore: storage::read().unwrap(),
             score_text: Text::new("0", Font::default(), 36.0),
 
             is_mouse_down: true,
@@ -133,6 +134,7 @@ impl GameScene {
 
             if self.score >= self.highscore {
                 self.highscore = self.score;
+                storage::write(self.highscore).unwrap();
             }
             self.scoreboard.set_score(ctx, self.score, self.highscore);
 
