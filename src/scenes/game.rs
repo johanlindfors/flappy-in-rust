@@ -1,4 +1,4 @@
-use tetra::graphics::{self, Texture, Text, Font, Color, Vec2, DrawParams};
+use tetra::graphics::{self, Texture, Text, Font, Vec2, DrawParams};
 use tetra::{Context};
 use tetra::input::{self, Key, MouseButton};
 use tetra::audio::Sound;
@@ -205,7 +205,6 @@ impl Scene for GameScene {
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
-        graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);
