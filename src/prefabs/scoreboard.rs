@@ -34,12 +34,12 @@ impl Scoreboard {
             game_over_position: Vec2::new(SCREEN_WIDTH as f32/ 2.0, 100.0),
             game_over_origin:Vec2::new(game_over_texture.width() as f32/ 2.0,
                                        game_over_texture.height() as f32/ 2.0),
-            game_over_texture: game_over_texture,
+            game_over_texture,
 
             scoreboard_position: Vec2::new(SCREEN_WIDTH as f32/ 2.0, 200.0),
             scoreboard_origin:Vec2::new(scoreboard_texture.width() as f32/ 2.0,
                                         scoreboard_texture.height() as f32/ 2.0),
-            scoreboard_texture: scoreboard_texture,
+            scoreboard_texture,
 
             button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32/ 2.0, 300.0))?,
 

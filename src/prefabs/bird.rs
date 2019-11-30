@@ -68,8 +68,8 @@ impl Bird {
     }
 
     pub fn tween_rotation(&mut self) {
-        let distance = (-1.0 - self.rotation) as f64;
-        self.flap_delta = distance.abs() / self.flap_counter as f64;
+        let distance = f64::from(-1.0 - self.rotation);
+        self.flap_delta = distance.abs() / f64::from(self.flap_counter);
     }
 
     pub fn update(&mut self) {
@@ -78,8 +78,8 @@ impl Bird {
         }
 
         if self.allow_gravity {
-            self.velocity.y = self.velocity.y + GRAVITY / 30.0;
-            self.position.y = self.position.y + self.velocity.y;
+            self.velocity.y += GRAVITY / 30.0;
+            self.position.y += self.velocity.y;
             if self.position.y <= 12.0 {
                 self.position.y = 12.0;
                 self.velocity.y = 0.0;
@@ -88,7 +88,8 @@ impl Bird {
             if self.flap_counter > 0 {
                 self.rotation -= self.flap_delta as f32;
                 self.flap_counter -= 1;
-            } if self.rotation < 1.5 {
+            }
+            if self.rotation < 1.5 {
                 self.rotation += 0.05;
             }
         }

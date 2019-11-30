@@ -11,10 +11,7 @@ pub struct Pipe {
 
 impl Pipe {
     fn new(position: Vec2, source_rect: Rectangle) -> tetra::Result<Pipe> {
-        Ok(Pipe {
-            position: position,
-            source_rect: source_rect,
-        })
+        Ok(Pipe { position, source_rect })
     }
 
     fn draw(&mut self, ctx: &mut Context, position: Vec2, texture: &Texture) {

@@ -16,10 +16,7 @@ impl Button {
             texture.height() as f32
         );
 
-        Ok(Button {
-            texture: texture,
-            rect: rect,
-        })
+        Ok(Button { texture, rect })
     }
 
     pub fn contains(&mut self, point: Vec2) -> bool {

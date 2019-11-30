@@ -58,7 +58,7 @@ impl GameScene {
             get_ready: Texture::new(ctx, "./resources/get-ready.png")?,
             instructions: Texture::new(ctx, "./resources/instructions.png")?,
 
-            bird: bird,
+            bird,
 
             flap_sound: Sound::new("./resources/flap.wav")?,
             ground_hit_sound: Sound::new("./resources/ground-hit.wav")?,
