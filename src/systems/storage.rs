@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::{FILE_NAME};
+use crate::FILE_NAME;
 
 pub fn write(high_score: i32) -> std::io::Result<()> {
     fs::write(FILE_NAME, high_score.to_string())?;

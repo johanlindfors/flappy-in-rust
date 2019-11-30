@@ -1,9 +1,9 @@
 use tetra::graphics::ScreenScaling;
+use tetra::graphics::{self};
 use tetra::window;
 use tetra::{Context, State};
-use tetra::graphics::{self};
 
-use crate::scenes::title::{TitleScene};
+use crate::scenes::title::TitleScene;
 
 // === Scene Management ===
 

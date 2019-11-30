@@ -1,10 +1,10 @@
-use tetra::{ContextBuilder};
+use tetra::ContextBuilder;
 
-mod systems;
-mod scenes;
 mod prefabs;
+mod scenes;
+mod systems;
 
-pub use systems::scenemanagement::{SceneManager};
+pub use systems::scenemanagement::SceneManager;
 
 pub const SCREEN_WIDTH: i32 = 288;
 pub const SCREEN_HEIGHT: i32 = 505;

@@ -1,8 +1,8 @@
-use tetra::graphics::{self, Texture, Rectangle, DrawParams, Vec2};
-use tetra::{Context};
+use tetra::graphics::{self, DrawParams, Rectangle, Texture, Vec2};
+use tetra::Context;
 
-use crate::systems::physics::{PhysicsBody, check_collision};
-use crate::{SCROLL_SPEED};
+use crate::systems::physics::{check_collision, PhysicsBody};
+use crate::SCROLL_SPEED;
 
 pub struct Pipe {
     position: Vec2,
@@ -11,13 +11,23 @@ pub struct Pipe {
 
 impl Pipe {
     fn new(position: Vec2, source_rect: Rectangle) -> tetra::Result<Pipe> {
-        Ok(Pipe { position, source_rect })
+        Ok(Pipe {
+            position,
+            source_rect,
+        })
     }
 
     fn draw(&mut self, ctx: &mut Context, position: Vec2, texture: &Texture) {
-        graphics::draw(ctx, texture, DrawParams::new()
-                .position(Vec2::new(self.position.x + position.x, self.position.y + position.y))
-                .clip(self.source_rect));
+        graphics::draw(
+            ctx,
+            texture,
+            DrawParams::new()
+                .position(Vec2::new(
+                    self.position.x + position.x,
+                    self.position.y + position.y,
+                ))
+                .clip(self.source_rect),
+        );
     }
 }
 
@@ -34,7 +44,7 @@ impl PhysicsBody for Pipe {
 pub struct PipeGroup {
     top_pipe: Pipe,
     bottom_pipe: Pipe,
-    
+
     pub position: Vec2,
     pub alive: bool,
     pub enabled: bool,
@@ -46,7 +56,10 @@ impl PipeGroup {
         Ok(PipeGroup {
             position: Vec2::new(0.0, 0.0),
             top_pipe: Pipe::new(Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
-            bottom_pipe: Pipe::new(Vec2::new(0.0, 440.0), Rectangle::new(54.0, 0.0, 54.0, 320.0))?,
+            bottom_pipe: Pipe::new(
+                Vec2::new(0.0, 440.0),
+                Rectangle::new(54.0, 0.0, 54.0, 320.0),
+            )?,
             alive: false,
             enabled: false,
             has_scored: false,
@@ -83,19 +96,20 @@ impl PhysicsBody for PipeGroup {
     }
 
     fn collides_with(&mut self, obj: &Rectangle) -> bool {
-        let relative_rect = Rectangle::new(obj.x - self.position.x - 27.0,
-                                           obj.y - self.position.y - 12.0,
-                                           obj.width,
-                                           obj.height);
-        self.top_pipe.collides_with(&relative_rect) ||
-        self.bottom_pipe.collides_with(&relative_rect)
+        let relative_rect = Rectangle::new(
+            obj.x - self.position.x - 27.0,
+            obj.y - self.position.y - 12.0,
+            obj.width,
+            obj.height,
+        );
+        self.top_pipe.collides_with(&relative_rect)
+            || self.bottom_pipe.collides_with(&relative_rect)
     }
 }
 
-
 pub struct PipeGenerator {
     counter: i32,
-    enabled: bool
+    enabled: bool,
 }
 
 impl PipeGenerator {

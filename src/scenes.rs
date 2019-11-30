@@ -1,2 +1,2 @@
-pub mod title;
 pub mod game;
+pub mod title;

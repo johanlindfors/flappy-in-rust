@@ -1,19 +1,19 @@
-use tetra::graphics::{self, Texture, Text, Font, Vec2, DrawParams};
-use tetra::{Context};
-use tetra::input::{self, Key, MouseButton};
 use tetra::audio::Sound;
+use tetra::graphics::{self, DrawParams, Font, Text, Texture, Vec2};
+use tetra::input::{self, Key, MouseButton};
+use tetra::Context;
 
 use rand::{thread_rng, Rng};
 
-use crate::systems::scenemanagement::{Scene, Transition};
-use crate::{SCREEN_WIDTH};
-use crate::prefabs::background::{Background};
-use crate::prefabs::ground::{Ground};
-use crate::prefabs::bird::{Bird};
-use crate::prefabs::pipes::{PipeGroup, PipeGenerator};
-use crate::prefabs::scoreboard::{Scoreboard};
+use crate::prefabs::background::Background;
+use crate::prefabs::bird::Bird;
+use crate::prefabs::ground::Ground;
+use crate::prefabs::pipes::{PipeGenerator, PipeGroup};
+use crate::prefabs::scoreboard::Scoreboard;
 use crate::systems::physics::PhysicsBody;
-use crate::systems::storage as storage;
+use crate::systems::scenemanagement::{Scene, Transition};
+use crate::systems::storage;
+use crate::SCREEN_WIDTH;
 
 pub struct GameScene {
     sky_texture: Texture,
@@ -212,12 +212,26 @@ impl Scene for GameScene {
         self.background.draw(ctx);
 
         if self.instructions_visible {
-            graphics::draw(ctx, &self.instructions, DrawParams::new()
-                .position(Vec2::new(SCREEN_WIDTH as f32/2.0, 325.0))
-                .origin(Vec2::new(self.instructions.width() as f32/2.0,self.instructions.height() as f32/2.0)));
-            graphics::draw(ctx, &self.get_ready, DrawParams::new()
-                .position(Vec2::new(SCREEN_WIDTH as f32/2.0, 100.0))
-                .origin(Vec2::new(self.get_ready.width() as f32/2.0,self.get_ready.height() as f32/2.0)));
+            graphics::draw(
+                ctx,
+                &self.instructions,
+                DrawParams::new()
+                    .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 325.0))
+                    .origin(Vec2::new(
+                        self.instructions.width() as f32 / 2.0,
+                        self.instructions.height() as f32 / 2.0,
+                    )),
+            );
+            graphics::draw(
+                ctx,
+                &self.get_ready,
+                DrawParams::new()
+                    .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 100.0))
+                    .origin(Vec2::new(
+                        self.get_ready.width() as f32 / 2.0,
+                        self.get_ready.height() as f32 / 2.0,
+                    )),
+            );
         }
 
         for pipe_group in &mut self.pipes {
@@ -228,9 +242,13 @@ impl Scene for GameScene {
 
         if !self.game_over {
             let text_bounds = self.score_text.get_bounds(ctx).unwrap();
-            graphics::draw(ctx, &self.score_text, DrawParams::new()
-                .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 10.0))
-                .origin(Vec2::new(text_bounds.width / 2.0, 0.0)));
+            graphics::draw(
+                ctx,
+                &self.score_text,
+                DrawParams::new()
+                    .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 10.0))
+                    .origin(Vec2::new(text_bounds.width / 2.0, 0.0)),
+            );
         } else {
             self.scoreboard.draw(ctx);
         }

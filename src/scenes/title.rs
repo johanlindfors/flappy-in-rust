@@ -1,13 +1,13 @@
-use tetra::graphics::{self, Texture, Animation, Rectangle, Vec2};
-use tetra::{Context};
+use tetra::graphics::{self, Animation, Rectangle, Texture, Vec2};
 use tetra::input::{self, Key, MouseButton};
+use tetra::Context;
 
+use crate::prefabs::background::Background;
+use crate::prefabs::button::Button;
+use crate::prefabs::ground::Ground;
+use crate::scenes::game::GameScene;
 use crate::systems::scenemanagement::{Scene, Transition};
-use crate::{SCREEN_WIDTH};
-use crate::scenes::game::{GameScene};
-use crate::prefabs::background::{Background};
-use crate::prefabs::ground::{Ground};
-use crate::prefabs::button::{Button};
+use crate::SCREEN_WIDTH;
 
 pub struct TitleScene {
     sky_texture: Texture,
@@ -20,7 +20,6 @@ pub struct TitleScene {
 
 impl TitleScene {
     pub fn new(ctx: &mut Context) -> tetra::Result<TitleScene> {
-
         Ok(TitleScene {
             sky_texture: Texture::new(ctx, "./resources/sky.png")?,
             title: Texture::new(ctx, "./resources/title.png")?,
@@ -33,19 +32,20 @@ impl TitleScene {
             background: Background::new(ctx)?,
             ground: Ground::new(ctx)?,
 
-            button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32/2.0, 300.0))?,
+            button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 300.0))?,
         })
     }
 }
 
 impl Scene for TitleScene {
-
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.background.update();
         self.ground.update();
 
         let mouse_position = input::get_mouse_position(ctx);
-        if input::is_mouse_button_down(ctx, MouseButton::Left) &&  self.button.contains(mouse_position) {
+        if input::is_mouse_button_down(ctx, MouseButton::Left)
+            && self.button.contains(mouse_position)
+        {
             Ok(Transition::Push(Box::new(GameScene::new(ctx)?)))
         } else if input::is_key_pressed(ctx, Key::Escape) {
             Ok(Transition::Pop)
@@ -60,7 +60,7 @@ impl Scene for TitleScene {
         self.background.draw(ctx);
         self.ground.draw(ctx);
 
-        graphics::draw(ctx, &self.bird, Vec2::new(230.0,105.0));
+        graphics::draw(ctx, &self.bird, Vec2::new(230.0, 105.0));
 
         graphics::draw(ctx, &self.title, Vec2::new(30.0, 100.0));
 

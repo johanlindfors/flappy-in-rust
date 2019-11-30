@@ -1,8 +1,8 @@
-use tetra::graphics::{self, Animation, Texture, Rectangle, DrawParams, Vec2};
-use tetra::{Context};
+use tetra::graphics::{self, Animation, DrawParams, Rectangle, Texture, Vec2};
+use tetra::Context;
 
-use crate::systems::physics::{PhysicsBody, check_collision};
-use crate::{SCREEN_HEIGHT, GRAVITY};
+use crate::systems::physics::{check_collision, PhysicsBody};
+use crate::{GRAVITY, SCREEN_HEIGHT};
 
 pub struct Bird {
     animation: Animation,
@@ -10,7 +10,7 @@ pub struct Bird {
     velocity: Vec2,
     flap_counter: i32,
     flap_delta: f64,
-    
+
     pub position: Vec2,
     pub allow_gravity: bool,
     pub alive: bool,
@@ -35,7 +35,7 @@ impl Bird {
                 5,
             ),
             rotation: 0.0,
-            position: Vec2::new(100.0, SCREEN_HEIGHT as f32/2.0),
+            position: Vec2::new(100.0, SCREEN_HEIGHT as f32 / 2.0),
             velocity: Vec2::new(0.0, 0.0),
             flap_counter: 0,
             flap_delta: 0.0,
@@ -95,14 +95,14 @@ impl Bird {
         }
     }
 
-    pub fn draw(&mut self, ctx: &mut Context ) {
+    pub fn draw(&mut self, ctx: &mut Context) {
         graphics::draw(
             ctx,
             &self.animation,
             DrawParams::new()
                 .position(self.position)
                 .origin(Vec2::new(17.0, 12.0))
-                .rotation(self.rotation)
+                .rotation(self.rotation),
         );
     }
 }
