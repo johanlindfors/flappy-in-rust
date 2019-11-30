@@ -58,11 +58,11 @@ impl Scoreboard {
 
         self.score_text.set_content(score.to_string());
         let bounds = self.score_text.get_bounds(ctx).unwrap();
-        self.score_origin = Vec2::new(-bounds.width, 0.0);
+        self.score_origin = Vec2::new(bounds.width, 0.0);
 
         self.highscore_text.set_content(highscore.to_string());
         let bounds = self.highscore_text.get_bounds(ctx).unwrap();
-        self.highscore_origin = Vec2::new(-bounds.width, 0.0);
+        self.highscore_origin = Vec2::new(bounds.width, 0.0);
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
@@ -76,11 +76,11 @@ impl Scoreboard {
         self.button.draw(ctx);
 
         graphics::draw(ctx, &self.score_text, DrawParams::new()
-                .position(Vec2::new(215.0, 176.0))
+                .position(Vec2::new(240.0, 176.0))
                 .origin(self.score_origin));
 
         graphics::draw(ctx, &self.highscore_text, DrawParams::new()
-                .position(Vec2::new(215.0, 222.0))
+                .position(Vec2::new(240.0, 222.0))
                 .origin(self.highscore_origin));
 
         if self.score >= 10 && self.score < 20 {
