@@ -1,6 +1,6 @@
 use tetra::graphics::{self, DrawParams, Font, Rectangle, Text, Texture};
-use tetra::Context;
 use tetra::math::Vec2;
+use tetra::Context;
 
 use crate::prefabs::button::Button;
 use crate::SCREEN_WIDTH;

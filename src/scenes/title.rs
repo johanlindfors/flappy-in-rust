@@ -1,9 +1,9 @@
-use tetra::graphics::{self, Rectangle, Texture};
-use tetra::graphics::animation::Animation;
-use tetra::input::{self, Key, MouseButton};
-use tetra::Context;
-use tetra::math::Vec2;
 use std::time::Duration;
+use tetra::graphics::animation::Animation;
+use tetra::graphics::{self, Rectangle, Texture};
+use tetra::input::{self, Key, MouseButton};
+use tetra::math::Vec2;
+use tetra::Context;
 
 use crate::prefabs::background::Background;
 use crate::prefabs::button::Button;

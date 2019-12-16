@@ -1,8 +1,8 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture};
-use tetra::graphics::animation::Animation;
-use tetra::Context;
 use std::time::Duration;
+use tetra::graphics::animation::Animation;
+use tetra::graphics::{self, DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
+use tetra::Context;
 
 use crate::systems::physics::{check_collision, PhysicsBody};
 use crate::{GRAVITY, SCREEN_HEIGHT};

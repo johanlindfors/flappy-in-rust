@@ -1,11 +1,11 @@
-use tetra::window;
-use tetra::{Context, State};
 use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
 use tetra::graphics::{self, Color};
 use tetra::math::Vec2;
+use tetra::window;
+use tetra::{Context, State};
 
-use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::scenes::title::TitleScene;
+use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 // === Scene Management ===
 

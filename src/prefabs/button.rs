@@ -1,6 +1,6 @@
 use tetra::graphics::{self, Rectangle, Texture};
-use tetra::Context;
 use tetra::math::Vec2;
+use tetra::Context;
 
 pub struct Button {
     texture: Texture,

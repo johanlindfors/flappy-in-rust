@@ -1,6 +1,6 @@
 use tetra::graphics::{self, DrawParams, Rectangle, Texture};
-use tetra::Context;
 use tetra::math::Vec2;
+use tetra::Context;
 
 use crate::SCROLL_SPEED;
 
