@@ -1,6 +1,9 @@
-use tetra::graphics::{self, Animation, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, Rectangle, Texture};
+use tetra::graphics::animation::Animation;
 use tetra::input::{self, Key, MouseButton};
 use tetra::Context;
+use tetra::math::Vec2;
+use std::time::Duration;
 
 use crate::prefabs::background::Background;
 use crate::prefabs::button::Button;
@@ -27,7 +30,7 @@ impl TitleScene {
             bird: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
                 Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
-                5,
+                Duration::from_secs_f64(0.2),
             ),
             background: Background::new(ctx)?,
             ground: Ground::new(ctx)?,
@@ -54,7 +57,7 @@ impl Scene for TitleScene {
         }
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context) {
         graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);

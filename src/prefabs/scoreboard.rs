@@ -1,24 +1,25 @@
-use tetra::graphics::{self, DrawParams, Font, Rectangle, Text, Texture, Vec2};
+use tetra::graphics::{self, DrawParams, Font, Rectangle, Text, Texture};
 use tetra::Context;
+use tetra::math::Vec2;
 
 use crate::prefabs::button::Button;
 use crate::SCREEN_WIDTH;
 
 pub struct Scoreboard {
     game_over_texture: Texture,
-    game_over_position: Vec2,
-    game_over_origin: Vec2,
+    game_over_position: Vec2<f32>,
+    game_over_origin: Vec2<f32>,
 
     scoreboard_texture: Texture,
-    scoreboard_position: Vec2,
-    scoreboard_origin: Vec2,
+    scoreboard_position: Vec2<f32>,
+    scoreboard_origin: Vec2<f32>,
 
     score_text: Text,
-    score_origin: Vec2,
+    score_origin: Vec2<f32>,
     score: i32,
 
     highscore_text: Text,
-    highscore_origin: Vec2,
+    highscore_origin: Vec2<f32>,
 
     medal: Texture,
 

@@ -1,5 +1,6 @@
-use tetra::graphics::{self, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, Rectangle, Texture};
 use tetra::Context;
+use tetra::math::Vec2;
 
 pub struct Button {
     texture: Texture,
@@ -7,7 +8,7 @@ pub struct Button {
 }
 
 impl Button {
-    pub fn new(ctx: &mut Context, centered_position: Vec2) -> tetra::Result<Button> {
+    pub fn new(ctx: &mut Context, centered_position: Vec2<f32>) -> tetra::Result<Button> {
         let texture = Texture::new(ctx, "./resources/start-button.png")?;
         let rect = Rectangle::new(
             centered_position.x - texture.width() as f32 / 2.0,
@@ -19,7 +20,7 @@ impl Button {
         Ok(Button { texture, rect })
     }
 
-    pub fn contains(&mut self, point: Vec2) -> bool {
+    pub fn contains(&mut self, point: Vec2<f32>) -> bool {
         point.x >= self.rect.x
             && point.x <= (self.rect.x + self.rect.width)
             && point.y >= self.rect.y

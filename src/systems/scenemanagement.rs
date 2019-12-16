@@ -1,5 +1,3 @@
-use tetra::graphics::ScreenScaling;
-use tetra::graphics::{self};
 use tetra::window;
 use tetra::{Context, State};
 
@@ -9,7 +7,7 @@ use crate::scenes::title::TitleScene;
 
 pub trait Scene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
-    fn draw(&mut self, ctx: &mut Context, dt: f64);
+    fn draw(&mut self, ctx: &mut Context);
 }
 
 pub enum Transition {
@@ -28,8 +26,6 @@ pub struct SceneManager {
 impl SceneManager {
     pub fn new(ctx: &mut Context) -> tetra::Result<SceneManager> {
         let initial_scene = TitleScene::new(ctx)?;
-        graphics::set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect);
-        window::show_mouse(ctx);
         Ok(SceneManager {
             scenes: vec![Box::new(initial_scene)],
         })
@@ -54,9 +50,9 @@ impl State for SceneManager {
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         match self.scenes.last_mut() {
-            Some(active_scene) => active_scene.draw(ctx, dt),
+            Some(active_scene) => active_scene.draw(ctx),
             None => window::quit(ctx),
         }
 

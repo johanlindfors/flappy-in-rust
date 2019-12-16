@@ -1,5 +1,6 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, DrawParams, Rectangle, Texture};
 use tetra::Context;
+use tetra::math::Vec2;
 
 use crate::systems::physics::{check_collision, PhysicsBody};
 use crate::{SCREEN_WIDTH, SCROLL_SPEED};

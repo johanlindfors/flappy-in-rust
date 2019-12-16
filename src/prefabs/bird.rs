@@ -1,5 +1,8 @@
-use tetra::graphics::{self, Animation, DrawParams, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, DrawParams, Rectangle, Texture};
+use tetra::graphics::animation::Animation;
 use tetra::Context;
+use std::time::Duration;
+use tetra::math::Vec2;
 
 use crate::systems::physics::{check_collision, PhysicsBody};
 use crate::{GRAVITY, SCREEN_HEIGHT};
@@ -7,11 +10,11 @@ use crate::{GRAVITY, SCREEN_HEIGHT};
 pub struct Bird {
     animation: Animation,
     rotation: f32,
-    velocity: Vec2,
+    velocity: Vec2<f32>,
     flap_counter: i32,
     flap_delta: f64,
 
-    pub position: Vec2,
+    pub position: Vec2<f32>,
     pub allow_gravity: bool,
     pub alive: bool,
 }
@@ -32,7 +35,7 @@ impl Bird {
             animation: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
                 Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
-                5,
+                Duration::from_secs_f64(0.2),
             ),
             rotation: 0.0,
             position: Vec2::new(100.0, SCREEN_HEIGHT as f32 / 2.0),
@@ -72,9 +75,9 @@ impl Bird {
         self.flap_delta = distance.abs() / f64::from(self.flap_counter);
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, ctx: &mut Context) {
         if self.alive {
-            self.animation.tick();
+            self.animation.advance(ctx);
         }
 
         if self.allow_gravity {

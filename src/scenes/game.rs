@@ -1,7 +1,8 @@
 use tetra::audio::Sound;
-use tetra::graphics::{self, DrawParams, Font, Text, Texture, Vec2};
+use tetra::graphics::{self, DrawParams, Font, Text, Texture};
 use tetra::input::{self, Key, MouseButton};
 use tetra::Context;
+use vek::Vec2;
 
 use rand::{thread_rng, Rng};
 
@@ -147,7 +148,7 @@ impl GameScene {
 
 impl Scene for GameScene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
-        self.bird.update();
+        self.bird.update(ctx);
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             if !self.is_mouse_down {
@@ -206,7 +207,7 @@ impl Scene for GameScene {
         Ok(Transition::None)
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context) {
         graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);

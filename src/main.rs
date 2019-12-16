@@ -16,5 +16,5 @@ fn main() -> tetra::Result {
     ContextBuilder::new("Flappy Bird", SCREEN_WIDTH, SCREEN_HEIGHT)
         .resizable(false)
         .build()?
-        .run_with(SceneManager::new)
+        .run(SceneManager::new)
 }

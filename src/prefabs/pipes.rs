@@ -1,23 +1,24 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, DrawParams, Rectangle, Texture};
 use tetra::Context;
+use tetra::math::Vec2;
 
 use crate::systems::physics::{check_collision, PhysicsBody};
 use crate::SCROLL_SPEED;
 
 pub struct Pipe {
-    position: Vec2,
+    position: Vec2<f32>,
     source_rect: Rectangle,
 }
 
 impl Pipe {
-    fn new(position: Vec2, source_rect: Rectangle) -> tetra::Result<Pipe> {
+    fn new(position: Vec2<f32>, source_rect: Rectangle) -> tetra::Result<Pipe> {
         Ok(Pipe {
             position,
             source_rect,
         })
     }
 
-    fn draw(&mut self, ctx: &mut Context, position: Vec2, texture: &Texture) {
+    fn draw(&mut self, ctx: &mut Context, position: Vec2<f32>, texture: &Texture) {
         graphics::draw(
             ctx,
             texture,
@@ -45,7 +46,7 @@ pub struct PipeGroup {
     top_pipe: Pipe,
     bottom_pipe: Pipe,
 
-    pub position: Vec2,
+    pub position: Vec2<f32>,
     pub alive: bool,
     pub enabled: bool,
     pub has_scored: bool,
