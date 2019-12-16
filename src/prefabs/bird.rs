@@ -35,7 +35,7 @@ impl Bird {
             animation: Animation::new(
                 Texture::new(ctx, "./resources/bird.png")?,
                 Rectangle::row(0.0, 0.0, 34.0, 24.0).take(3).collect(),
-                Duration::from_secs_f64(0.2),
+                Duration::from_secs_f64(0.1),
             ),
             rotation: 0.0,
             position: Vec2::new(100.0, SCREEN_HEIGHT as f32 / 2.0),
@@ -75,11 +75,7 @@ impl Bird {
         self.flap_delta = distance.abs() / f64::from(self.flap_counter);
     }
 
-    pub fn update(&mut self, ctx: &mut Context) {
-        if self.alive {
-            self.animation.advance(ctx);
-        }
-
+    pub fn update(&mut self, _ctx: &mut Context) {
         if self.allow_gravity {
             self.velocity.y += GRAVITY / 30.0;
             self.position.y += self.velocity.y;
@@ -99,6 +95,10 @@ impl Bird {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
+        if self.alive {
+            self.animation.advance(ctx);
+        }
+
         graphics::draw(
             ctx,
             &self.animation,

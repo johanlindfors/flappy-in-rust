@@ -14,7 +14,6 @@ pub const FILE_NAME: &str = "highscore.txt";
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Flappy Bird", SCREEN_WIDTH, SCREEN_HEIGHT)
-        .resizable(false)
         .build()?
         .run(SceneManager::new)
 }
