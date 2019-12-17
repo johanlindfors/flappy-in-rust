@@ -126,6 +126,7 @@ impl GameScene {
 
         if !self.game_over && self.bird.collides_with(&self.ground.get_collision_rect()) {
             assert!(self.ground_hit_sound.play(ctx).is_ok());
+            self.bird.kill();
             self.bird.allow_gravity = false;
             self.background.scroll = false;
             self.ground.scroll = false;
