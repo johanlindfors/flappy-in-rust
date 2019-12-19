@@ -4,24 +4,8 @@ use tetra::math::Vec2;
 use tetra::window;
 use tetra::{Context, State};
 
-use crate::scenes::title::TitleScene;
+use crate::scenes::{Scene, Transition, title::TitleScene};
 use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
-
-// === Scene Management ===
-
-pub trait Scene {
-    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
-    fn draw(&mut self, ctx: &mut Context);
-}
-
-pub enum Transition {
-    None,
-    Push(Box<dyn Scene>),
-    Pop,
-}
-
-// Boxing/dynamic dispatch could be avoided here by defining an enum for all
-// of your scenes, but that adds a bit of extra boilerplate - your choice!
 
 pub struct SceneManager {
     scenes: Vec<Box<dyn Scene>>,

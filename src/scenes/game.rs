@@ -12,7 +12,7 @@ use crate::prefabs::ground::Ground;
 use crate::prefabs::pipes::{PipeGenerator, PipeGroup};
 use crate::prefabs::scoreboard::Scoreboard;
 use crate::systems::physics::PhysicsBody;
-use crate::systems::scenemanagement::{Scene, Transition};
+use crate::scenes::{Scene, Transition};
 use crate::systems::storage;
 use crate::SCREEN_WIDTH;
 
