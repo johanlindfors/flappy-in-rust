@@ -8,7 +8,7 @@ use tetra::Context;
 use crate::prefabs::background::Background;
 use crate::prefabs::button::Button;
 use crate::prefabs::ground::Ground;
-use crate::scenes::{Scene, Transition, game::GameScene};
+use crate::scenes::{game::GameScene, Scene, Transition};
 use crate::SCREEN_WIDTH;
 
 pub struct TitleScene {

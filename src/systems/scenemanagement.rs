@@ -4,7 +4,7 @@ use tetra::math::Vec2;
 use tetra::window;
 use tetra::{Context, State};
 
-use crate::scenes::{Scene, Transition, title::TitleScene};
+use crate::scenes::{title::TitleScene, Scene, Transition};
 use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 pub struct SceneManager {
