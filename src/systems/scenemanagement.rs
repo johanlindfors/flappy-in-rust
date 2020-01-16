@@ -5,7 +5,7 @@ use tetra::{Context, State};
 use crate::scenes::{title::TitleScene, Scene, Transition};
 
 pub struct SceneManager {
-    scenes: Vec<Box<dyn Scene>>
+    scenes: Vec<Box<dyn Scene>>,
 }
 
 impl SceneManager {
@@ -14,10 +14,10 @@ impl SceneManager {
             Ok(_) => {
                 let initial_scene = TitleScene::new(ctx)?;
                 Ok(SceneManager {
-                    scenes: vec![Box::new(initial_scene)]
-                })        
+                    scenes: vec![Box::new(initial_scene)],
+                })
             }
-            Err(e) => panic!("Couldn't show mouse: {:?}", e) 
+            Err(e) => panic!("Couldn't show mouse: {:?}", e),
         }
     }
 }
