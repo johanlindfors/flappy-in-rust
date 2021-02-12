@@ -112,13 +112,13 @@ impl Scoreboard {
             self.medal.draw_region(
                 ctx,
                 Rectangle::new(0.0, 0.0, 44.0, 46.0),
-                DrawParams::new().position(Vec2::new(58.0, 185.0)),
+                Vec2::new(58.0, 185.0),
             );
         } else if self.score >= 20 {
             self.medal.draw_region(
                 ctx,
                 Rectangle::new(0.0, 46.0, 44.0, 46.0),
-                DrawParams::new().position(Vec2::new(58.0, 185.0)),
+                Vec2::new(58.0, 185.0),
             );
         }
     }

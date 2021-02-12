@@ -1,4 +1,4 @@
-use tetra::graphics::{DrawParams, Rectangle, Texture};
+use tetra::graphics::{Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -22,10 +22,7 @@ impl Pipe {
         texture.draw_region(
             ctx,
             self.source_rect,
-            DrawParams::new().position(Vec2::new(
-                self.position.x + position.x,
-                self.position.y + position.y,
-            )),
+            Vec2::new(self.position.x + position.x, self.position.y + position.y),
         );
     }
 }

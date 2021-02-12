@@ -1,4 +1,4 @@
-use tetra::graphics::{DrawParams, Rectangle, Texture};
+use tetra::graphics::Texture;
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -9,9 +9,9 @@ pub struct Background {
     cityscape_texture: Texture,
     cloud_texture: Texture,
 
-    forest_rect: Rectangle,
-    cityscape_rect: Rectangle,
-    cloud_rect: Rectangle,
+    forest_pos: f32,
+    cityscape_pos: f32,
+    cloud_pos: f32,
 
     pub scroll: bool,
 }
@@ -20,13 +20,13 @@ impl Background {
     pub fn new(ctx: &mut Context) -> tetra::Result<Background> {
         Ok(Background {
             forest_texture: Texture::new(ctx, "./resources/trees.png")?,
-            forest_rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
+            forest_pos: 0.0,
 
             cityscape_texture: Texture::new(ctx, "./resources/cityscape.png")?,
-            cityscape_rect: Rectangle::new(0.0, 0.0, 300.0, 43.0),
+            cityscape_pos: 0.0,
 
             cloud_texture: Texture::new(ctx, "./resources/clouds.png")?,
-            cloud_rect: Rectangle::new(0.0, 0.0, 352.0, 100.0),
+            cloud_pos: 0.0,
 
             scroll: true,
         })
@@ -34,29 +34,26 @@ impl Background {
 
     pub fn update(&mut self) {
         if self.scroll {
-            self.forest_rect.x += SCROLL_SPEED * 0.75;
-            self.cityscape_rect.x += SCROLL_SPEED * 0.5;
-            self.cloud_rect.x += SCROLL_SPEED * 0.25;
+            self.forest_pos = (self.forest_pos - SCROLL_SPEED * 0.75) % 335.0;
+            self.cityscape_pos = (self.cityscape_pos - SCROLL_SPEED * 0.5) % 300.0;
+            self.cloud_pos = (self.cloud_pos - SCROLL_SPEED * 0.25) % 352.0;
         }
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        self.cloud_texture.draw_region(
-            ctx,
-            self.cloud_rect,
-            DrawParams::new().position(Vec2::new(0.0, 300.0)),
-        );
+        self.cloud_texture
+            .draw(ctx, Vec2::new(self.cloud_pos, 300.0));
+        self.cloud_texture
+            .draw(ctx, Vec2::new(self.cloud_pos + 352.0, 300.0));
 
-        self.cityscape_texture.draw_region(
-            ctx,
-            self.cityscape_rect,
-            DrawParams::new().position(Vec2::new(0.0, 330.0)),
-        );
+        self.cityscape_texture
+            .draw(ctx, Vec2::new(self.cityscape_pos, 330.0));
+        self.cityscape_texture
+            .draw(ctx, Vec2::new(self.cityscape_pos + 300.0, 330.0));
 
-        self.forest_texture.draw_region(
-            ctx,
-            self.forest_rect,
-            DrawParams::new().position(Vec2::new(0.0, 360.0)),
-        );
+        self.forest_texture
+            .draw(ctx, Vec2::new(self.forest_pos, 360.0));
+        self.forest_texture
+            .draw(ctx, Vec2::new(self.forest_pos + 335.0, 360.0));
     }
 }
