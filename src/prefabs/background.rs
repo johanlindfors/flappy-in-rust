@@ -41,25 +41,25 @@ impl Background {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        &self.cloud_texture.draw(
+        &self.cloud_texture.draw_region(
             ctx,
+            self.cloud_rect,
             DrawParams::new()
                 .position(Vec2::new(0.0, 300.0))
-                .clip(self.cloud_rect),
         );
 
-        &self.cityscape_texture.draw(
+        &self.cityscape_texture.draw_region(
             ctx,
+            self.cityscape_rect,
             DrawParams::new()
                 .position(Vec2::new(0.0, 330.0))
-                .clip(self.cityscape_rect),
         );
 
-        &self.forest_texture.draw(
+        &self.forest_texture.draw_region(
             ctx,
+            self.forest_rect,
             DrawParams::new()
                 .position(Vec2::new(0.0, 360.0))
-                .clip(self.forest_rect),
         );
     }
 }

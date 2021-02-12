@@ -38,11 +38,11 @@ impl Ground {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        &self.texture.draw(
+        &self.texture.draw_region(
             ctx,
+            self.rect,
             DrawParams::new()
                 .position(Vec2::new(0.0, 400.0))
-                .clip(self.rect),
         );
     }
 }

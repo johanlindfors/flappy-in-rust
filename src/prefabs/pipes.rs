@@ -19,14 +19,14 @@ impl Pipe {
     }
 
     fn draw(&mut self, ctx: &mut Context, position: Vec2<f32>, texture: &Texture) {
-        texture.draw(
+        texture.draw_region(
             ctx,
+            self.source_rect,
             DrawParams::new()
                 .position(Vec2::new(
                     self.position.x + position.x,
                     self.position.y + position.y,
                 ))
-                .clip(self.source_rect),
         );
     }
 }
