@@ -69,7 +69,10 @@ impl GameScene {
 
             score: 0,
             highscore: storage::read().unwrap(),
-            score_text: Text::new("0", Font::default(), 36.0),
+            score_text: Text::new(
+                "0",
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?
+            ),
 
             is_mouse_down: true,
             instructions_visible: true,
@@ -188,7 +191,7 @@ impl Scene for GameScene {
 
             if self.pipe_generator.should_spawn_pipe() {
                 let mut rng = thread_rng();
-                let y: f32 = rng.gen_range(-100.0, 100.0);
+                let y: f32 = rng.gen_range(-100.0..100.0);
 
                 for pipe_group in &mut self.pipes {
                     if !pipe_group.alive {
