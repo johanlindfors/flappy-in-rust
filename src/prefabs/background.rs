@@ -41,31 +41,19 @@ impl Background {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        self.cloud_texture.draw(
-            ctx,
-            Vec2::new(self.cloud_pos, 300.0)
-        );
-        self.cloud_texture.draw(
-            ctx,
-            Vec2::new(self.cloud_pos + 352.0, 300.0)
-        );
+        self.cloud_texture
+            .draw(ctx, Vec2::new(self.cloud_pos, 300.0));
+        self.cloud_texture
+            .draw(ctx, Vec2::new(self.cloud_pos + 352.0, 300.0));
 
-        self.cityscape_texture.draw(
-            ctx,
-            Vec2::new(self.cityscape_pos, 330.0)
-        );
-        self.cityscape_texture.draw(
-            ctx,
-            Vec2::new(self.cityscape_pos + 300.0, 330.0)
-        );
+        self.cityscape_texture
+            .draw(ctx, Vec2::new(self.cityscape_pos, 330.0));
+        self.cityscape_texture
+            .draw(ctx, Vec2::new(self.cityscape_pos + 300.0, 330.0));
 
-        self.forest_texture.draw(
-            ctx,
-            Vec2::new(self.forest_pos, 360.0)
-        );
-        self.forest_texture.draw(
-            ctx,
-            Vec2::new(self.forest_pos + 335.0, 360.0)
-        );
+        self.forest_texture
+            .draw(ctx, Vec2::new(self.forest_pos, 360.0));
+        self.forest_texture
+            .draw(ctx, Vec2::new(self.forest_pos + 335.0, 360.0));
     }
 }

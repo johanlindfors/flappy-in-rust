@@ -37,13 +37,8 @@ impl Ground {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        self.texture.draw(
-            ctx,
-            Vec2::new(self.scroll_pos, 400.0)
-        );
-        self.texture.draw(
-            ctx,
-            Vec2::new(self.scroll_pos + 335.0, 400.0)
-        );
+        self.texture.draw(ctx, Vec2::new(self.scroll_pos, 400.0));
+        self.texture
+            .draw(ctx, Vec2::new(self.scroll_pos + 335.0, 400.0));
     }
 }
