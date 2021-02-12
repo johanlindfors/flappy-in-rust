@@ -1,8 +1,8 @@
 use tetra::audio::Sound;
-use tetra::graphics::{self, DrawParams, Font, Text, Texture};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, DrawParams, Texture};
 use tetra::input::{self, Key, MouseButton};
 use tetra::Context;
-use vek::Vec2;
 
 use rand::{thread_rng, Rng};
 

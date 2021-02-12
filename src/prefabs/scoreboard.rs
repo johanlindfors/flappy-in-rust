@@ -1,4 +1,5 @@
-use tetra::graphics::{self, DrawParams, Font, Rectangle, Text, Texture};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
