@@ -28,6 +28,6 @@ impl Button {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        &self.texture.draw(ctx, Vec2::new(self.rect.x, self.rect.y));
+        self.texture.draw(ctx, Vec2::new(self.rect.x, self.rect.y));
     }
 }

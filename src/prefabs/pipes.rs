@@ -11,11 +11,11 @@ pub struct Pipe {
 }
 
 impl Pipe {
-    fn new(position: Vec2<f32>, source_rect: Rectangle) -> tetra::Result<Pipe> {
-        Ok(Pipe {
+    fn new(position: Vec2<f32>, source_rect: Rectangle) -> Self {
+        Pipe {
             position,
             source_rect,
-        })
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context, position: Vec2<f32>, texture: &Texture) {
@@ -54,11 +54,11 @@ impl PipeGroup {
     pub fn new() -> tetra::Result<PipeGroup> {
         Ok(PipeGroup {
             position: Vec2::new(0.0, 0.0),
-            top_pipe: Pipe::new(Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
+            top_pipe: Pipe::new(Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0)),
             bottom_pipe: Pipe::new(
                 Vec2::new(0.0, 440.0),
                 Rectangle::new(54.0, 0.0, 54.0, 320.0),
-            )?,
+            ),
             alive: false,
             enabled: false,
             has_scored: false,

@@ -213,12 +213,12 @@ impl Scene for GameScene {
     }
 
     fn draw(&mut self, ctx: &mut Context) {
-        &self.sky_texture.draw(ctx, Vec2::zero());
+        self.sky_texture.draw(ctx, Vec2::zero());
 
         self.background.draw(ctx);
 
         if self.instructions_visible {
-            &self.instructions.draw(
+            self.instructions.draw(
                 ctx,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 325.0))
@@ -227,7 +227,7 @@ impl Scene for GameScene {
                         self.instructions.height() as f32 / 2.0,
                     )),
             );
-            &self.get_ready.draw(
+            self.get_ready.draw(
                 ctx,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 100.0))
@@ -246,7 +246,7 @@ impl Scene for GameScene {
 
         if !self.game_over {
             let text_bounds = self.score_text.get_bounds(ctx).unwrap();
-            &self.score_text.draw(
+            self.score_text.draw(
                 ctx,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 10.0))

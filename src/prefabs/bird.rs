@@ -99,7 +99,7 @@ impl Bird {
             self.animation.advance(ctx);
         }
 
-        &self.animation.draw(
+        self.animation.draw(
             ctx,
             DrawParams::new()
                 .position(self.position)

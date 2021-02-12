@@ -57,14 +57,14 @@ impl Scene for TitleScene {
     }
 
     fn draw(&mut self, ctx: &mut Context) {
-        &self.sky_texture.draw(ctx, Vec2::new(0.0, 0.0));
+        self.sky_texture.draw(ctx, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);
         self.ground.draw(ctx);
 
-        &self.bird.draw(ctx, Vec2::new(230.0, 105.0));
+        self.bird.draw(ctx, Vec2::new(230.0, 105.0));
 
-        &self.title.draw(ctx, Vec2::new(30.0, 100.0));
+        self.title.draw(ctx, Vec2::new(30.0, 100.0));
 
         self.button.draw(ctx);
     }

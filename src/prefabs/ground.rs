@@ -38,7 +38,7 @@ impl Ground {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        &self.texture.draw_region(
+        self.texture.draw_region(
             ctx,
             self.rect,
             DrawParams::new().position(Vec2::new(0.0, 400.0)),

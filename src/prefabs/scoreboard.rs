@@ -79,13 +79,13 @@ impl Scoreboard {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        &self.game_over_texture.draw(
+        self.game_over_texture.draw(
             ctx,
             DrawParams::new()
                 .position(self.game_over_position)
                 .origin(self.game_over_origin),
         );
-        &self.scoreboard_texture.draw(
+        self.scoreboard_texture.draw(
             ctx,
             DrawParams::new()
                 .position(self.scoreboard_position)
@@ -94,14 +94,14 @@ impl Scoreboard {
 
         self.button.draw(ctx);
 
-        &self.score_text.draw(
+        self.score_text.draw(
             ctx,
             DrawParams::new()
                 .position(Vec2::new(240.0, 176.0))
                 .origin(self.score_origin),
         );
 
-        &self.highscore_text.draw(
+        self.highscore_text.draw(
             ctx,
             DrawParams::new()
                 .position(Vec2::new(240.0, 222.0))
@@ -109,13 +109,13 @@ impl Scoreboard {
         );
 
         if self.score >= 10 && self.score < 20 {
-            &self.medal.draw_region(
+            self.medal.draw_region(
                 ctx,
                 Rectangle::new(0.0, 0.0, 44.0, 46.0),
                 DrawParams::new().position(Vec2::new(58.0, 185.0)),
             );
         } else if self.score >= 20 {
-            &self.medal.draw_region(
+            self.medal.draw_region(
                 ctx,
                 Rectangle::new(0.0, 46.0, 44.0, 46.0),
                 DrawParams::new().position(Vec2::new(58.0, 185.0)),
