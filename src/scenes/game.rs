@@ -1,8 +1,9 @@
 use tetra::audio::Sound;
 use tetra::graphics::text::{Font, Text};
-use tetra::graphics::{self, DrawParams, Texture};
+use tetra::graphics::{DrawParams, Texture};
 use tetra::input::{self, Key, MouseButton};
 use tetra::Context;
+use tetra::math::Vec2;
 
 use rand::{thread_rng, Rng};
 
@@ -209,14 +210,13 @@ impl Scene for GameScene {
     }
 
     fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
+        &self.sky_texture.draw(ctx, Vec2::zero());
 
         self.background.draw(ctx);
 
         if self.instructions_visible {
-            graphics::draw(
+            &self.instructions.draw(
                 ctx,
-                &self.instructions,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 325.0))
                     .origin(Vec2::new(
@@ -224,9 +224,8 @@ impl Scene for GameScene {
                         self.instructions.height() as f32 / 2.0,
                     )),
             );
-            graphics::draw(
+            &self.get_ready.draw(
                 ctx,
-                &self.get_ready,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 100.0))
                     .origin(Vec2::new(
@@ -244,9 +243,8 @@ impl Scene for GameScene {
 
         if !self.game_over {
             let text_bounds = self.score_text.get_bounds(ctx).unwrap();
-            graphics::draw(
+            &self.score_text.draw(
                 ctx,
-                &self.score_text,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 10.0))
                     .origin(Vec2::new(text_bounds.width / 2.0, 0.0)),

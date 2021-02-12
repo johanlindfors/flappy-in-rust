@@ -1,4 +1,4 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture};
+use tetra::graphics::{DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -19,9 +19,8 @@ impl Pipe {
     }
 
     fn draw(&mut self, ctx: &mut Context, position: Vec2<f32>, texture: &Texture) {
-        graphics::draw(
+        texture.draw(
             ctx,
-            texture,
             DrawParams::new()
                 .position(Vec2::new(
                     self.position.x + position.x,

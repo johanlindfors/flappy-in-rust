@@ -1,6 +1,6 @@
 use std::time::Duration;
 use tetra::graphics::animation::Animation;
-use tetra::graphics::{self, Rectangle, Texture};
+use tetra::graphics::{Rectangle, Texture};
 use tetra::input::{self, Key, MouseButton};
 use tetra::math::Vec2;
 use tetra::Context;
@@ -57,14 +57,14 @@ impl Scene for TitleScene {
     }
 
     fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
+        &self.sky_texture.draw(ctx, Vec2::new(0.0, 0.0));
 
         self.background.draw(ctx);
         self.ground.draw(ctx);
 
-        graphics::draw(ctx, &self.bird, Vec2::new(230.0, 105.0));
+        &self.bird.draw(ctx, Vec2::new(230.0, 105.0));
 
-        graphics::draw(ctx, &self.title, Vec2::new(30.0, 100.0));
+        &self.title.draw(ctx, Vec2::new(30.0, 100.0));
 
         self.button.draw(ctx);
     }
