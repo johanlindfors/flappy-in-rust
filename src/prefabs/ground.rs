@@ -1,4 +1,4 @@
-use tetra::graphics::{DrawParams, Rectangle, Texture};
+use tetra::graphics::{Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -7,8 +7,7 @@ use crate::{SCREEN_WIDTH, SCROLL_SPEED};
 
 pub struct Ground {
     texture: Texture,
-    rect: Rectangle,
-
+    scroll_pos: f32,
     pub scroll: bool,
 }
 
@@ -26,22 +25,25 @@ impl Ground {
     pub fn new(ctx: &mut Context) -> tetra::Result<Ground> {
         Ok(Ground {
             texture: Texture::new(ctx, "./resources/ground.png")?,
-            rect: Rectangle::new(0.0, 0.0, 335.0, 112.0),
+            scroll_pos: 0.0,
             scroll: true,
         })
     }
 
     pub fn update(&mut self) {
         if self.scroll {
-            self.rect.x += SCROLL_SPEED;
+            self.scroll_pos = (self.scroll_pos - SCROLL_SPEED) % 335.0;
         }
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        self.texture.draw_region(
+        self.texture.draw(
             ctx,
-            self.rect,
-            DrawParams::new().position(Vec2::new(0.0, 400.0)),
+            Vec2::new(self.scroll_pos, 400.0)
+        );
+        self.texture.draw(
+            ctx,
+            Vec2::new(self.scroll_pos + 335.0, 400.0)
         );
     }
 }
