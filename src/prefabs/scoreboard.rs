@@ -1,4 +1,5 @@
-use tetra::graphics::{self, DrawParams, Font, Rectangle, Text, Texture};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -48,9 +49,16 @@ impl Scoreboard {
 
             button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 300.0))?,
 
-            score_text: Text::new("0", Font::default(), 26.0),
+            score_text: Text::new(
+                "0",
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?,
+            ),
             score_origin: Vec2::new(0.0, 0.0),
-            highscore_text: Text::new("0", Font::default(), 26.0),
+            highscore_text: Text::new(
+                "0",
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?,
+            ),
+
             highscore_origin: Vec2::new(0.0, 0.0),
             score: 0,
 
@@ -71,16 +79,14 @@ impl Scoreboard {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(
+        self.game_over_texture.draw(
             ctx,
-            &self.game_over_texture,
             DrawParams::new()
                 .position(self.game_over_position)
                 .origin(self.game_over_origin),
         );
-        graphics::draw(
+        self.scoreboard_texture.draw(
             ctx,
-            &self.scoreboard_texture,
             DrawParams::new()
                 .position(self.scoreboard_position)
                 .origin(self.scoreboard_origin),
@@ -88,37 +94,31 @@ impl Scoreboard {
 
         self.button.draw(ctx);
 
-        graphics::draw(
+        self.score_text.draw(
             ctx,
-            &self.score_text,
             DrawParams::new()
                 .position(Vec2::new(240.0, 176.0))
                 .origin(self.score_origin),
         );
 
-        graphics::draw(
+        self.highscore_text.draw(
             ctx,
-            &self.highscore_text,
             DrawParams::new()
                 .position(Vec2::new(240.0, 222.0))
                 .origin(self.highscore_origin),
         );
 
         if self.score >= 10 && self.score < 20 {
-            graphics::draw(
+            self.medal.draw_region(
                 ctx,
-                &self.medal,
-                DrawParams::new()
-                    .position(Vec2::new(58.0, 185.0))
-                    .clip(Rectangle::new(0.0, 0.0, 44.0, 46.0)),
+                Rectangle::new(0.0, 0.0, 44.0, 46.0),
+                DrawParams::new().position(Vec2::new(58.0, 185.0)),
             );
         } else if self.score >= 20 {
-            graphics::draw(
+            self.medal.draw_region(
                 ctx,
-                &self.medal,
-                DrawParams::new()
-                    .position(Vec2::new(58.0, 185.0))
-                    .clip(Rectangle::new(0.0, 46.0, 44.0, 46.0)),
+                Rectangle::new(0.0, 46.0, 44.0, 46.0),
+                DrawParams::new().position(Vec2::new(58.0, 185.0)),
             );
         }
     }

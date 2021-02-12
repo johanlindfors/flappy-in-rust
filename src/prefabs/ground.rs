@@ -1,4 +1,4 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture};
+use tetra::graphics::{DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -38,12 +38,10 @@ impl Ground {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(
+        self.texture.draw_region(
             ctx,
-            &self.texture,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 400.0))
-                .clip(self.rect),
+            self.rect,
+            DrawParams::new().position(Vec2::new(0.0, 400.0)),
         );
     }
 }

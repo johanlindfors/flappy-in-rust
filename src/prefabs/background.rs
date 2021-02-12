@@ -1,4 +1,4 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture};
+use tetra::graphics::{DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -41,28 +41,22 @@ impl Background {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(
+        self.cloud_texture.draw_region(
             ctx,
-            &self.cloud_texture,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 300.0))
-                .clip(self.cloud_rect),
+            self.cloud_rect,
+            DrawParams::new().position(Vec2::new(0.0, 300.0)),
         );
 
-        graphics::draw(
+        self.cityscape_texture.draw_region(
             ctx,
-            &self.cityscape_texture,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 330.0))
-                .clip(self.cityscape_rect),
+            self.cityscape_rect,
+            DrawParams::new().position(Vec2::new(0.0, 330.0)),
         );
 
-        graphics::draw(
+        self.forest_texture.draw_region(
             ctx,
-            &self.forest_texture,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 360.0))
-                .clip(self.forest_rect),
+            self.forest_rect,
+            DrawParams::new().position(Vec2::new(0.0, 360.0)),
         );
     }
 }

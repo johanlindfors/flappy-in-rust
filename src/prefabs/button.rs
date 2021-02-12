@@ -1,4 +1,4 @@
-use tetra::graphics::{self, Rectangle, Texture};
+use tetra::graphics::{Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -28,6 +28,6 @@ impl Button {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(ctx, &self.texture, Vec2::new(self.rect.x, self.rect.y));
+        self.texture.draw(ctx, Vec2::new(self.rect.x, self.rect.y));
     }
 }

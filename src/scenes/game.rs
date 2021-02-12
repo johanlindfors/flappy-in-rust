@@ -1,8 +1,9 @@
 use tetra::audio::Sound;
-use tetra::graphics::{self, DrawParams, Font, Text, Texture};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{DrawParams, Texture};
 use tetra::input::{self, Key, MouseButton};
+use tetra::math::Vec2;
 use tetra::Context;
-use vek::Vec2;
 
 use rand::{thread_rng, Rng};
 
@@ -68,7 +69,10 @@ impl GameScene {
 
             score: 0,
             highscore: storage::read().unwrap(),
-            score_text: Text::new("0", Font::default(), 36.0),
+            score_text: Text::new(
+                "0",
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?,
+            ),
 
             is_mouse_down: true,
             instructions_visible: true,
@@ -187,7 +191,7 @@ impl Scene for GameScene {
 
             if self.pipe_generator.should_spawn_pipe() {
                 let mut rng = thread_rng();
-                let y: f32 = rng.gen_range(-100.0, 100.0);
+                let y: f32 = rng.gen_range(-100.0..100.0);
 
                 for pipe_group in &mut self.pipes {
                     if !pipe_group.alive {
@@ -209,14 +213,13 @@ impl Scene for GameScene {
     }
 
     fn draw(&mut self, ctx: &mut Context) {
-        graphics::draw(ctx, &self.sky_texture, Vec2::new(0.0, 0.0));
+        self.sky_texture.draw(ctx, Vec2::zero());
 
         self.background.draw(ctx);
 
         if self.instructions_visible {
-            graphics::draw(
+            self.instructions.draw(
                 ctx,
-                &self.instructions,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 325.0))
                     .origin(Vec2::new(
@@ -224,9 +227,8 @@ impl Scene for GameScene {
                         self.instructions.height() as f32 / 2.0,
                     )),
             );
-            graphics::draw(
+            self.get_ready.draw(
                 ctx,
-                &self.get_ready,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 100.0))
                     .origin(Vec2::new(
@@ -244,9 +246,8 @@ impl Scene for GameScene {
 
         if !self.game_over {
             let text_bounds = self.score_text.get_bounds(ctx).unwrap();
-            graphics::draw(
+            self.score_text.draw(
                 ctx,
-                &self.score_text,
                 DrawParams::new()
                     .position(Vec2::new(SCREEN_WIDTH as f32 / 2.0, 10.0))
                     .origin(Vec2::new(text_bounds.width / 2.0, 0.0)),

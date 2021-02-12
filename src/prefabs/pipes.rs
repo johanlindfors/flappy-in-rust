@@ -1,4 +1,4 @@
-use tetra::graphics::{self, DrawParams, Rectangle, Texture};
+use tetra::graphics::{DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -11,23 +11,21 @@ pub struct Pipe {
 }
 
 impl Pipe {
-    fn new(position: Vec2<f32>, source_rect: Rectangle) -> tetra::Result<Pipe> {
-        Ok(Pipe {
+    fn new(position: Vec2<f32>, source_rect: Rectangle) -> Self {
+        Pipe {
             position,
             source_rect,
-        })
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context, position: Vec2<f32>, texture: &Texture) {
-        graphics::draw(
+        texture.draw_region(
             ctx,
-            texture,
-            DrawParams::new()
-                .position(Vec2::new(
-                    self.position.x + position.x,
-                    self.position.y + position.y,
-                ))
-                .clip(self.source_rect),
+            self.source_rect,
+            DrawParams::new().position(Vec2::new(
+                self.position.x + position.x,
+                self.position.y + position.y,
+            )),
         );
     }
 }
@@ -56,11 +54,11 @@ impl PipeGroup {
     pub fn new() -> tetra::Result<PipeGroup> {
         Ok(PipeGroup {
             position: Vec2::new(0.0, 0.0),
-            top_pipe: Pipe::new(Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0))?,
+            top_pipe: Pipe::new(Vec2::new(0.0, 0.0), Rectangle::new(0.0, 0.0, 54.0, 320.0)),
             bottom_pipe: Pipe::new(
                 Vec2::new(0.0, 440.0),
                 Rectangle::new(54.0, 0.0, 54.0, 320.0),
-            )?,
+            ),
             alive: false,
             enabled: false,
             has_scored: false,

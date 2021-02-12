@@ -1,6 +1,6 @@
 use std::time::Duration;
 use tetra::graphics::animation::Animation;
-use tetra::graphics::{self, DrawParams, Rectangle, Texture};
+use tetra::graphics::{DrawParams, Rectangle, Texture};
 use tetra::math::Vec2;
 use tetra::Context;
 
@@ -99,9 +99,8 @@ impl Bird {
             self.animation.advance(ctx);
         }
 
-        graphics::draw(
+        self.animation.draw(
             ctx,
-            &self.animation,
             DrawParams::new()
                 .position(self.position)
                 .origin(Vec2::new(17.0, 12.0))
