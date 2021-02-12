@@ -2,8 +2,8 @@ use tetra::audio::Sound;
 use tetra::graphics::text::{Font, Text};
 use tetra::graphics::{DrawParams, Texture};
 use tetra::input::{self, Key, MouseButton};
-use tetra::Context;
 use tetra::math::Vec2;
+use tetra::Context;
 
 use rand::{thread_rng, Rng};
 
@@ -71,7 +71,7 @@ impl GameScene {
             highscore: storage::read().unwrap(),
             score_text: Text::new(
                 "0",
-                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?,
             ),
 
             is_mouse_down: true,

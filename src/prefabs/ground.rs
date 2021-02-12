@@ -41,8 +41,7 @@ impl Ground {
         &self.texture.draw_region(
             ctx,
             self.rect,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 400.0))
+            DrawParams::new().position(Vec2::new(0.0, 400.0)),
         );
     }
 }

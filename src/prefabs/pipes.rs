@@ -22,11 +22,10 @@ impl Pipe {
         texture.draw_region(
             ctx,
             self.source_rect,
-            DrawParams::new()
-                .position(Vec2::new(
-                    self.position.x + position.x,
-                    self.position.y + position.y,
-                ))
+            DrawParams::new().position(Vec2::new(
+                self.position.x + position.x,
+                self.position.y + position.y,
+            )),
         );
     }
 }

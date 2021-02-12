@@ -44,22 +44,19 @@ impl Background {
         &self.cloud_texture.draw_region(
             ctx,
             self.cloud_rect,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 300.0))
+            DrawParams::new().position(Vec2::new(0.0, 300.0)),
         );
 
         &self.cityscape_texture.draw_region(
             ctx,
             self.cityscape_rect,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 330.0))
+            DrawParams::new().position(Vec2::new(0.0, 330.0)),
         );
 
         &self.forest_texture.draw_region(
             ctx,
             self.forest_rect,
-            DrawParams::new()
-                .position(Vec2::new(0.0, 360.0))
+            DrawParams::new().position(Vec2::new(0.0, 360.0)),
         );
     }
 }

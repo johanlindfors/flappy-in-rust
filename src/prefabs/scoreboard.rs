@@ -50,13 +50,13 @@ impl Scoreboard {
             button: Button::new(ctx, Vec2::new(SCREEN_WIDTH as f32 / 2.0, 300.0))?,
 
             score_text: Text::new(
-                "0", 
-                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?
+                "0",
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?,
             ),
             score_origin: Vec2::new(0.0, 0.0),
             highscore_text: Text::new(
-                "0", 
-                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?
+                "0",
+                Font::vector(ctx, "./resources/font/flappy-font.ttf", 26.0)?,
             ),
 
             highscore_origin: Vec2::new(0.0, 0.0),
@@ -112,15 +112,13 @@ impl Scoreboard {
             &self.medal.draw_region(
                 ctx,
                 Rectangle::new(0.0, 0.0, 44.0, 46.0),
-                DrawParams::new()
-                    .position(Vec2::new(58.0, 185.0))
+                DrawParams::new().position(Vec2::new(58.0, 185.0)),
             );
         } else if self.score >= 20 {
             &self.medal.draw_region(
                 ctx,
                 Rectangle::new(0.0, 46.0, 44.0, 46.0),
-                DrawParams::new()
-                    .position(Vec2::new(58.0, 185.0))
+                DrawParams::new().position(Vec2::new(58.0, 185.0)),
             );
         }
     }
